@@ -32,9 +32,18 @@ export default function TimerPage() {
 
   const startTimer = () => {}
 
-  const stopTimer = () => {}
+  const stopTimer = (): void => {
+    if (intervalRef.current !== null) {
+      clearInterval(intervalRef.current);
+    }
+    setRunning(false);
+  };
 
-  const resetTimer = () => {}
+  const resetTimer = (): void => {
+    stopTimer();
+    setSecondsLeft(0);
+    setTimeText("00:00:00");
+  };
 
   return(
     <View style = {styles.container}>
