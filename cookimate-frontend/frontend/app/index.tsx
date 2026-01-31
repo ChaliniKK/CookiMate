@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import { router } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View ,Image} from "react-native";
 
 type NavCardProps = {
   title: string;
@@ -30,6 +30,13 @@ function HomePage() {
     <View style={styles.mainContainer}>
 
       <View style={styles.topSubContainer}>
+
+        <View style={styles.mascotCircle}>
+          <Image source={require('../assets/images/logo.png')} 
+          style={styles.mascotImg}  />
+
+        </View>
+
         
 
       </View>
@@ -103,7 +110,24 @@ const styles = StyleSheet.create({
     borderColor: "#e6391b",
     borderStyle: "solid",
     padding:25,
-  }
+  },
+  mascotCircle: {
+    width: 300,
+    height :300,
+     borderWidth:1,
+    borderColor: "#e6391b",
+    borderStyle: "solid",
+    padding:25,
+    
+    borderRadius: 150,
+    overflow:'hidden',
+    backgroundColor: '#fff',
+    
+    
+  },
+  mascotImg: { width: '100%', height: '100%' },
+
+
 });
 
 export default HomePage;
