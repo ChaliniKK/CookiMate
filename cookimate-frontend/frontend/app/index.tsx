@@ -31,12 +31,18 @@ function HomePage() {
 
       <View style={styles.topSubContainer}>
         <Text style={styles.welcomemsg}>Welcome Back!!</Text>
+        <View style={styles.bubble}>
+              <Text style={styles.bubbleText}>hii hope you ajhhhhre having a good day</Text>
+             
+              <View style={styles.bubbleTail} />
+           </View>
 
         <View style={styles.mascotCircle}>
           <Image source={require('../assets/images/logo.png')} 
           style={styles.mascotImg}  />
-
+          
         </View>
+        
 
         
 
@@ -110,13 +116,13 @@ const styles = StyleSheet.create({
      borderWidth:1,
     borderColor: "#e6391b",
     borderStyle: "solid",
-    padding:25,
+    padding:15,
     alignItems:'center',
     margin:25,
   },
   mascotCircle: {
-    width: 250,
-    height :250,
+    width: 225,
+    height :225,
      borderWidth:1,
     borderColor: "#e6391b",
     borderStyle: "solid",
@@ -135,7 +141,39 @@ const styles = StyleSheet.create({
     marginBottom:10,
     fontSize:18,
     padding:0
-  }
+  },
+  bubble: {
+    backgroundColor: '#fff',
+    padding: 7,
+    borderRadius: 20,
+    marginBottom: 20,
+    maxWidth: '99%',
+    position: 'relative', 
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+  },
+  bubbleText: {
+    fontSize: 16,
+    color: '#5D4037',
+    textAlign: 'center',
+  },
+  bubbleTail: {
+    position: 'absolute',
+    bottom: -8, 
+    left: '50%',
+    marginLeft: -10,
+    width: 20,
+    height: 20,
+    backgroundColor: '#fff',
+    transform: [{ rotate: '45deg' }],
+    zIndex: -1, 
+  },
+
+
+
+  
 
 
 });
