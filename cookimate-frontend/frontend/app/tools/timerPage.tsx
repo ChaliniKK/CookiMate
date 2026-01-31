@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Button } from 'react-native';
 import { useState, useRef } from 'react';
 
 export default function TimerPage() {
@@ -30,22 +30,43 @@ export default function TimerPage() {
     return h * 3600 + m * 60 + s;
   }
 
+  const startTimer = () => {}
+
+  const stopTimer = () => {}
+
+  const resetTimer = () => {}
+
   return(
     <View style = {styles.container}>
       <Text style={styles.title}>Timer</Text>
+
+      <View style={styles.buttons}>
+        <Button title="Start" onPress={startTimer}></Button>
+        <Button title="Stop" onPress={stopTimer}></Button>
+        <Button title="Reset" onPress={resetTimer}></Button>
+      </View>
     </View>
   );
 }
   
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     borderWidth: 1,
     justifyContent: "center",
+    width: 550,
+    alignSelf: "center",
   },
 
   title: {
     fontSize: 20,
     textAlign: "center",
+  },
+
+  buttons: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 50,
   }
   
 });
