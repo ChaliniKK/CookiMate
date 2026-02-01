@@ -148,7 +148,10 @@ const selectedAlarm = selectedAlarmValue !== null
             }}
             containerStyle={styles.dropDownContainer} 
             style={styles.dropDown}
-            dropDownContainerStyle={styles.dropDownList}
+            dropDownContainerStyle={[
+              styles.dropDownList, 
+              { maxHeight: 250 }
+            ]}
 
           />
         </View>
