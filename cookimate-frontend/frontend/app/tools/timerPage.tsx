@@ -47,20 +47,25 @@ const selectedAlarm = selectedAlarmValue !== null
   const parseTimeText = () => {
     const parts = timeText.split(":");
     if (parts.length !== 3) return 0;
-    const h = parseInt(parts[0]) || 0;
-    const m = parseInt(parts[1]) || 0;
-    const s = parseInt(parts[2]) || 0;
-    return h * 3600 + m * 60 + s;
+
+      const h = parseInt(parts[0]) || 0;
+      const m = parseInt(parts[1]) || 0;
+      const s = parseInt(parts[2]) || 0;
+
+      return h * 3600 + m * 60 + s;
   };
 
   const startTimer = (): void => {
     if (running) return;
-    const totalSeconds = parseTimeText();
+      const totalSeconds = parseTimeText();
+
     if (totalSeconds <= 0) return;
-    setSecondsLeft(totalSeconds);
-    setRunning(true);
-    setEditMode(false);
+      setSecondsLeft(totalSeconds);
+      setRunning(true);
+      setEditMode(false);
+      
     if (intervalRef.current) clearInterval(intervalRef.current);
+    
     intervalRef.current = setInterval(() => {
       setSecondsLeft((prev: number) => {
         if (prev <= 1) {
