@@ -65,22 +65,22 @@ function HomePage() {
 
       <ScrollView style={styles.bottomSubContainer}>
           <NavCard
-            title="search-page"
+            title="Find Recipes" 
             icon="🔍"
             href="/loginPage"
-            description="Testing the Reusable Card component"
+            description="Tell me what you have in your kitchen" 
           />
         <NavCard
-          title="community -page"
-          icon="🔍"
+          title="Generate Custom" 
+          icon="✨"
           href="/loginPage"
-          description={"Testing the Reusable Card component 2"}
+          description="AI will create a recipe for you" 
         ></NavCard>
          <NavCard
-          title="community -page"
-          icon="🔍"
+          title="Community" 
+          icon="👥"
           href="/loginPage"
-          description={"Testing the Reusable Card component 2"}
+          description="See what others are cooking" 
         ></NavCard>
         
          
