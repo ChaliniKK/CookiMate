@@ -1,8 +1,13 @@
-import { Link } from "expo-router";
 import { router } from "expo-router";
-import { globalStyle } from "./globalStyleSheet.style";
-import React, { useState, useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View ,Image,ScrollView} from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 type NavCardProps = {
   title: string;
@@ -10,10 +15,10 @@ type NavCardProps = {
   description: string;
   href: string;
 };
-const NavCard = ({ title, icon, description,href }: NavCardProps) => {
+const NavCard = ({ title, icon, description, href }: NavCardProps) => {
   return (
     <Pressable
-    onPress={() => router.push(href as any)}
+      onPress={() => router.push(href as any)}
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
     >
       <View style={styles.iconCircle}>
@@ -28,14 +33,15 @@ const NavCard = ({ title, icon, description,href }: NavCardProps) => {
 };
 
 function HomePage() {
-  const [message, setMessage] = useState("Hi! What would you like to cook today");
+  const [message, setMessage] = useState(
+    "Hi! What would you like to cook today",
+  );
 
   useEffect(() => {
     const messages = [
       "Hi! Are you feeling hungry?",
       "Let's make something tasty!",
       "I'm ready to help you find recipes!",
-  
     ];
 
     const interval = setInterval(() => {
@@ -47,42 +53,42 @@ function HomePage() {
   }, []);
 
   return (
-    <View style={styles.mainContainer}>
-
+    <ScrollView style={styles.mainContainer}>
       <View style={styles.topSubContainer}>
         <Text style={styles.welcomemsg}>Welcome Back!!</Text>
         <View style={styles.mascotCircle}>
-          <Image source={require('../assets/images/Home-page-Mascot.jpg')} 
-          style={styles.mascotImg}  />  
-        </View>
-         <View style={styles.bubble}>
-              <Text style={styles.bubbleText}>{message}</Text>
-             
-              <View style={styles.bubbleTail} />
-           </View>
-      </View>
-
-      <ScrollView style={styles.bottomSubContainer}>
-          <NavCard
-            title="Find Recipes" 
-            icon="🔍"
-            href="/loginPage"
-            description="Tell me what you have in your kitchen" 
+          <Image
+            source={require("../assets/images/Home-page-Mascot.jpg")}
+            style={styles.mascotImg}
           />
+        </View>
+        <View style={styles.bubble}>
+          <Text style={styles.bubbleText}>{message}</Text>
+
+          <View style={styles.bubbleTail} />
+        </View>
+      </View>
+      <View style={styles.bottomSubContainer}>
         <NavCard
-          title="Generate Custom" 
+          title="Find Recipes"
+          icon="🔍"
+          href="/loginPage"
+          description="Tell me what you have in your kitchen"
+        />
+        <NavCard
+          title="Generate Custom"
           icon="✨"
           href="/loginPage"
-          description="AI will create a recipe for you" 
+          description="AI will create a recipe for you"
         ></NavCard>
-         <NavCard
-          title="Community" 
+        <NavCard
+          title="Community"
           icon="👥"
           href="/loginPage"
-          description="See what others are cooking" 
+          description="See what others are cooking"
         ></NavCard>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -93,7 +99,8 @@ const styles = StyleSheet.create({
     padding: 15,
 
     borderRadius: 20,
-    marginTop:15,
+    marginTop: 10,
+    marginBottom: 10,
     alignItems: "center",
     elevation: 4,
     shadowColor: "#000",
@@ -114,110 +121,84 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   cardTextContainer: { flex: 1 },
-  cardTitle:
-   { fontSize: 18,
-    fontWeight:'bold',
-     color: "#1a1919be" },
+  cardTitle: { fontSize: 18, fontWeight: "bold", color: "#1a1919be" },
 
-  cardDescription: 
-  { fontSize: 14, color: "#777",
-     marginTop: 2 },
+  cardDescription: { fontSize: 14, color: "#777", marginTop: 2 },
 
-     
   mainContainer: {
-    
+    padding: 25,
     flex: 1,
-        
-    
-    
-    borderStyle: "solid",
-  },
-  bottomSubContainer:{
-    borderWidth:1,
-    marginBottom:50,
-    borderColor: "#f0871f45",
-    borderStyle: "solid",
-    padding:25,
-    maxHeight:400,
-    marginInline:25,
-    
-     borderRadius: 20,
-    backgroundColor:"#eab17745",
-    
- 
 
+    borderStyle: "solid",
   },
-  topSubContainer:{
-     borderWidth:1,
+  bottomSubContainer: {
+    borderWidth: 1,
+    padding: 20,
+    borderColor: "#f0871f45",
+
+    borderRadius: 20,
+    backgroundColor: "#eab17745",
+  },
+  topSubContainer: {
+    borderWidth: 1,
     borderColor: "#f0871f45",
     borderStyle: "solid",
-    padding:15,
-    alignItems:'center',
-    margin:25,
+    padding: 15,
+    alignItems: "center",
+    marginBottom: 25,
     borderRadius: 20,
-    backgroundColor:"#eab17745",
- 
-    
+    backgroundColor: "#eab17745",
   },
   mascotCircle: {
     width: 225,
-    height :225,
-     borderWidth:1,
+    height: 225,
+    borderWidth: 1,
     borderColor: "#e6391b",
     borderStyle: "solid",
-    padding:25,
-    
+    padding: 25,
+
     borderRadius: 150,
-    overflow:'hidden',
-    backgroundColor: '#fff',
-    
-    
+    overflow: "hidden",
+    backgroundColor: "#fff",
   },
-  mascotImg: { width: '100%', height: '100%' },
-  welcomemsg:{
-    marginRight:"auto",
-    
-    marginBottom:10,
-    fontSize:22,
-    padding:0
+  mascotImg: { width: "100%", height: "100%" },
+  welcomemsg: {
+    marginRight: "auto",
+
+    marginBottom: 10,
+    fontSize: 22,
+    padding: 0,
   },
-bubble: {
-    backgroundColor: '#ffffff',
+  bubble: {
+    backgroundColor: "#ffffff",
     paddingTop: 10,
-    paddingInline:10,
-    paddingBottom:10,
+    paddingInline: 10,
+    paddingBottom: 10,
     borderRadius: 20,
     marginTop: 10,
-    maxWidth: '90%',
-    position: 'relative', 
+    maxWidth: "90%",
+    position: "relative",
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
   },
   bubbleText: {
     fontSize: 16,
-    color: '#5D4037',
-    textAlign: 'center',
+    color: "#5D4037",
+    textAlign: "center",
   },
   bubbleTail: {
-    position: 'absolute',
-    top: -8, 
-    left: '20%',
+    position: "absolute",
+    top: -8,
+    left: "20%",
     marginLeft: -10,
     width: 20,
     height: 20,
-    backgroundColor: '#fff',
-    transform: [{ rotate: '45deg' }],
-    zIndex: -1, 
+    backgroundColor: "#fff",
+    transform: [{ rotate: "45deg" }],
+    zIndex: -1,
   },
-
-
-
-
-  
-
-
 });
 
 export default HomePage;
