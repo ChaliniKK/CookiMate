@@ -3,8 +3,6 @@ import { router } from "expo-router";
 import React, { useState, useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View ,Image,ScrollView} from "react-native";
 
-
-
 type NavCardProps = {
   title: string;
   icon: string;
@@ -53,7 +51,7 @@ function HomePage() {
       <View style={styles.topSubContainer}>
         <Text style={styles.welcomemsg}>Welcome Back!!</Text>
         <View style={styles.mascotCircle}>
-          <Image source={require('../assets/images/logo.png')} 
+          <Image source={require('../assets/images/Home-page-Mascot.jpg')} 
           style={styles.mascotImg}  />  
         </View>
          <View style={styles.bubble}>
@@ -82,8 +80,6 @@ function HomePage() {
           href="/loginPage"
           description="See what others are cooking" 
         ></NavCard>
-        
-         
       </ScrollView>
     </View>
   );
@@ -117,10 +113,19 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   cardTextContainer: { flex: 1 },
-  cardTitle: { fontSize: 18,fontWeight:'bold', color: "#333" },
-  cardDescription: { fontSize: 14, color: "#777", marginTop: 2 },
+  cardTitle:
+   { fontSize: 18,
+    fontWeight:'bold',
+     color: "#1a1919be" },
+
+  cardDescription: 
+  { fontSize: 14, color: "#777",
+     marginTop: 2 },
+
+     
   mainContainer: {
     borderWidth: 1,
+    
     borderColor: "#751212",
     borderStyle: "solid",
   },
@@ -130,6 +135,7 @@ const styles = StyleSheet.create({
     borderColor: "#f0871f45",
     borderStyle: "solid",
     padding:25,
+    maxHeight:400,
     marginInline:25,
      borderRadius: 20,
     backgroundColor:"#eab17745",
@@ -179,7 +185,7 @@ bubble: {
     borderRadius: 20,
     marginTop: 10,
     maxWidth: '90%',
-    position: 'relative', // Necessary for tail positioning
+    position: 'relative', 
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -192,14 +198,14 @@ bubble: {
   },
   bubbleTail: {
     position: 'absolute',
-    top: -8, // Positioned at the bottom of the bubble
+    top: -8, 
     left: '20%',
     marginLeft: -10,
     width: 20,
     height: 20,
     backgroundColor: '#fff',
     transform: [{ rotate: '45deg' }],
-    zIndex: -1, // Sits behind the main bubble
+    zIndex: -1, 
   },
 
 
