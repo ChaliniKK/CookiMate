@@ -75,7 +75,7 @@ const Page = () => {
         </View>
       </Modal>
       <Image
-        source={require('../assets/images/festivals.png')}
+        source={require('../assets/images/planner_img3.png')}
         style={styles.festivalsImage}>
       </Image>
     </View>
