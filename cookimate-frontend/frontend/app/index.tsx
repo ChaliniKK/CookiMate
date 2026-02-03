@@ -87,6 +87,7 @@ function HomePage() {
           href="/loginPage"
           description="See what others are cooking"
         ></NavCard>
+      
       </View>
     </ScrollView>
   );
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 20,
     borderColor: "#f0871f45",
-
+    marginBottom:100,
     borderRadius: 20,
     backgroundColor: "#eab17745",
   },
