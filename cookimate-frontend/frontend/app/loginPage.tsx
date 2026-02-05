@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, TextInput, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 
 export default function LoginPage() {
@@ -10,6 +10,8 @@ export default function LoginPage() {
       style={styles.container}
       resizeMode="cover" 
     >
+      <KeyboardAvoidingView style={styles.keyboardAvoiding} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
       <View style={styles.card}>
         <Text style={styles.label}>User Name</Text>
         <TextInput
@@ -42,6 +44,8 @@ export default function LoginPage() {
           </View>
         </View>
       </View>
+      </ScrollView>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 }
@@ -49,10 +53,17 @@ export default function LoginPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',   // ✅ center vertically
-    alignItems: 'center',
   },
-
+  keyboardAvoiding: {
+    flex: 1,
+    width: '100%',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
   navContainer: {
     flexDirection: 'row',    
     justifyContent: 'space-between', 
