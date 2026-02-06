@@ -1,8 +1,10 @@
-import { Image, View, StyleSheet, Modal, Text, Button, TouchableOpacity } from 'react-native'; 
-import React, { useState } from 'react'; 
+import { Image, View, StyleSheet, Modal, Text, TouchableOpacity, Dimensions, FlatList } from 'react-native'; 
+import React, { useState, useRef, useEffect } from 'react'; 
 import { Calendar } from 'react-native-calendars';
 import { Dropdown } from 'react-native-element-dropdown';
 import { globalStyle } from './globalStyleSheet.style';
+
+const { width } = Dimensions.get('window');
 
 const mealOptions = [
   { label: 'Breakfast 🍳', value: 'breakfast' },
@@ -11,11 +13,51 @@ const mealOptions = [
   { label: 'Snack 🥨', value: 'snack' },
 ];
 
-const Page = () => {
+// Circular array: First image repeated at the end
+const carouselImages = [
+  require('../assets/images/planner_img1.png'),
+  require('../assets/images/planner_img2.png'),
+  require('../assets/images/planner_img3.png'),
+  require('../assets/images/planner_img1.png'), 
+];
 
+const Page = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
   const [mealType, setMealType] = useState(null);
+  
+  const flatListRef = useRef<FlatList>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // 1. Auto-scroll timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const nextIndex = currentIndex + 1;
+
+      if (nextIndex < carouselImages.length) {
+        flatListRef.current?.scrollToIndex({
+          index: nextIndex,
+          animated: true,
+        });
+        setCurrentIndex(nextIndex);
+      }
+    }, 4000);
+
+    return () => clearInterval(timer);
+  }, [currentIndex]);
+
+  // 2. The "Silent Teleport" logic for Android stability
+  const handleScroll = (event: any) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    // We use a small buffer (0.5) to catch the frame right as it snaps
+    const scrollValue = contentOffsetX / width;
+    
+    // If we have arrived at the final 'fake' image
+    if (scrollValue >= carouselImages.length - 1) {
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+      setCurrentIndex(0);
+    }
+  };
 
   return (
     <View style={globalStyle.container}>
@@ -46,9 +88,7 @@ const Page = () => {
                 valueField="value"
                 placeholder="Select meal type 🍔"
                 value={mealType}
-                onChange={item => {
-                  setMealType(item.value);
-                }}
+                onChange={item => setMealType(item.value)}
               />
             </View>
 
@@ -65,8 +105,8 @@ const Page = () => {
               </TouchableOpacity>
         
               <TouchableOpacity
-              style={styles.styledButton}
-              onPress={() => setIsModalVisible(false)}
+                style={styles.styledButton}
+                onPress={() => setIsModalVisible(false)}
               >
                 <Text style={styles.buttonText}>Plan</Text>
               </TouchableOpacity>
@@ -74,10 +114,30 @@ const Page = () => {
           </View>
         </View>
       </Modal>
-      <Image
-        source={require('../assets/images/planner_img3.png')}
-        style={styles.festivalsImage}>
-      </Image>
+
+      <View style={styles.carouselWrapper}>
+        <FlatList
+          ref={flatListRef}
+          data={carouselImages}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScrollToIndexFailed={() => {}} 
+          keyExtractor={(_, index) => index.toString()}
+          // Optimization for Pixel/Android:
+          onScroll={handleScroll}
+          scrollEventThrottle={16} 
+          onMomentumScrollEnd={(event) => {
+            const newIndex = Math.round(event.nativeEvent.contentOffset.x / width);
+            if (newIndex < carouselImages.length - 1) {
+              setCurrentIndex(newIndex);
+            }
+          }}
+          renderItem={({ item }) => (
+            <Image source={item} style={styles.festivalsImage} />
+          )}
+        />
+      </View>
     </View>
   );
 };
@@ -166,14 +226,18 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 8,
   },
+  carouselWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '54%', 
+  },
   festivalsImage: {
-  width: '100%',  
-  height: '50%', 
-  position: 'absolute', 
-  bottom: 0,  
+    width: width,
+    height: '100%',
+    resizeMode: 'cover',
   },
 });
-
-
 
 export default Page;
