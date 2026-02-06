@@ -13,7 +13,7 @@ const mealOptions = [
   { label: 'Snack 🥨', value: 'snack' },
 ];
 
-// Circular array: First image repeated at the end
+// Circular arrayof images for the scrolling animation
 const carouselImages = [
   require('../assets/images/planner_img1.png'),
   require('../assets/images/planner_img2.png'),
@@ -29,7 +29,7 @@ const Page = () => {
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // 1. Auto-scroll timer
+  // 1. Auto scroll timer
   useEffect(() => {
     const timer = setInterval(() => {
       const nextIndex = currentIndex + 1;
@@ -41,18 +41,18 @@ const Page = () => {
         });
         setCurrentIndex(nextIndex);
       }
-    }, 4000);
+    }, 4000); //The time duration per image
 
     return () => clearInterval(timer);
   }, [currentIndex]);
 
-  // 2. The "Silent Teleport" logic for Android stability
+  
   const handleScroll = (event: any) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
-    // We use a small buffer (0.5) to catch the frame right as it snaps
+    
     const scrollValue = contentOffsetX / width;
     
-    // If we have arrived at the final 'fake' image
+    
     if (scrollValue >= carouselImages.length - 1) {
       flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
       setCurrentIndex(0);
@@ -124,7 +124,6 @@ const Page = () => {
           showsHorizontalScrollIndicator={false}
           onScrollToIndexFailed={() => {}} 
           keyExtractor={(_, index) => index.toString()}
-          // Optimization for Pixel/Android:
           onScroll={handleScroll}
           scrollEventThrottle={16} 
           onMomentumScrollEnd={(event) => {
