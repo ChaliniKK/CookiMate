@@ -2,13 +2,15 @@ import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, TextInput, K
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../config/firebase'; // Ensure this path matches your file structure
+import { auth } from '../config/firebase'; 
+import { Ionicons } from '@expo/vector-icons'; // Import Icons
 
 export default function LoginPage() {
   const router = useRouter(); 
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // State for visibility
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -20,9 +22,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // Login successful!
       setLoading(false);
-      // Navigate to Home or the Tools page
       router.replace('/'); 
     } catch (error: any) {
       setLoading(false);
@@ -38,7 +38,7 @@ export default function LoginPage() {
   };
 
   const navigateToForgot = () => {
-    router.push('/forgotPassword'); // We will create this file next
+    router.push('/forgotPassword'); 
   };
 
   return (
@@ -51,7 +51,6 @@ export default function LoginPage() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.card}>
             
-            {/* Changed Label to Email for Firebase Auth */}
             <Text style={styles.label}>Email</Text>
             <TextInput
               style={styles.input}
@@ -64,14 +63,19 @@ export default function LoginPage() {
             />
 
             <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter password"
-              placeholderTextColor="#999"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Enter password"
+                placeholderTextColor="#999"
+                secureTextEntry={!showPassword} // Toggle based on state
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                <Ionicons name={showPassword ? "eye-off" : "eye"} size={20} color="gray" />
+              </TouchableOpacity>
+            </View>
             
             <TouchableOpacity onPress={navigateToForgot}>
               <Text style={styles.forgot}>Forgot password?</Text>
@@ -142,6 +146,26 @@ const styles = StyleSheet.create({
     height: 40,
     padding: 10,
     marginBottom: 15,
+  },
+
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderColor: "#ffffff",
+    borderRadius: 8,
+    height: 40,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+  },
+  passwordInput: {
+    flex: 1,
+    height: '100%',
+    color: '#000',
+  },
+  eyeIcon: {
+    padding: 4,
   },
   loginButton: {
     backgroundColor: "#5f4436e6",

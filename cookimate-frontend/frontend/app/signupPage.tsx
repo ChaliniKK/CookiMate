@@ -1,16 +1,16 @@
 import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, TextInput, Alert, KeyboardAvoidingView, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons'; // Import Icons
 
-// Import the auth instance
 import { auth } from '../config/firebase'; 
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'; // Added updateProfile
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'; 
 
 export default function SignupPage() {
   const router = useRouter();
 
-  // Loading State
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Visibility State
 
   // State for form fields
   const [email, setEmail] = useState('');
@@ -29,7 +29,7 @@ export default function SignupPage() {
   const [usernameError, setUsernameError] = useState('');
   const [usernameTouched, setUsernameTouched] = useState(false);
 
-  // --- Validation Logic (Same as before) ---
+  // --- Validation Logic ---
   const validateEmail = (value: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!value) {
@@ -75,7 +75,6 @@ export default function SignupPage() {
     }
   };
 
-  // --- Handle Sign Up ---
   const handleSignup = async () => {
     setEmailTouched(true);
     setPasswordTouched(true);
@@ -87,20 +86,15 @@ export default function SignupPage() {
       return;
     }
 
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
 
     try {
-      // 1. Create the user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Update the profile with the Username immediately
-      // Note: We are saving 'username' to displayName. 
       await updateProfile(user, {
         displayName: username
       });
-
-      console.log('User created and profile updated:', user.email);
 
       Alert.alert("Success", "Account created successfully!", [
         { text: "OK", onPress: () => router.replace('/loginPage') }
@@ -114,7 +108,7 @@ export default function SignupPage() {
       
       Alert.alert("Signup Error", errorMessage);
     } finally {
-      setIsLoading(false); // Stop loading whether success or failure
+      setIsLoading(false);
     }
   };
 
@@ -168,18 +162,22 @@ export default function SignupPage() {
 
             {/* Password */}
             <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={[styles.input, passwordTouched && passwordError ? styles.errorBorder : null]}
-              placeholder="Enter password"
-              placeholderTextColor="#999"
-              secureTextEntry
-              value={password}
-              onChangeText={validatePassword}
-              onBlur={() => setPasswordTouched(true)}
-            />
+            <View style={[styles.passwordContainer, passwordTouched && passwordError ? styles.errorBorder : null]}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Enter password"
+                placeholderTextColor="#999"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={validatePassword}
+                onBlur={() => setPasswordTouched(true)}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                <Ionicons name={showPassword ? "eye-off" : "eye"} size={20} color="gray" />
+              </TouchableOpacity>
+            </View>
             {passwordTouched && passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
 
-            {/* Signup button with Loading State */}
             <TouchableOpacity 
               style={[styles.signupButton, isLoading && styles.disabledButton]} 
               onPress={handleSignup}
@@ -237,6 +235,26 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 5,
   },
+
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderColor: "#ffffff",
+    borderRadius: 8,
+    height: 40,
+    paddingHorizontal: 10,
+    marginBottom: 5,
+  },
+  passwordInput: {
+    flex: 1,
+    height: '100%',
+    color: '#000',
+  },
+  eyeIcon: {
+    padding: 4,
+  },
   errorBorder: {
     borderColor: 'red',
   },
@@ -253,7 +271,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   disabledButton: {
-    backgroundColor: "#5f443699", // Slightly faded when loading
+    backgroundColor: "#5f443699",
   },
   signupText: {
     color: "#fff",
