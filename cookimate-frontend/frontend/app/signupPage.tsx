@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, TextInput, A
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons'; // Import Icons
+import GoogleSignIn from '../components/GoogleSignIn';
 
 import { auth } from '../config/firebase'; 
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth'; 
@@ -200,6 +201,8 @@ export default function SignupPage() {
                 <Text style={styles.signupText}>Sign up</Text>
               )}
             </TouchableOpacity>
+
+            <GoogleSignIn />
 
             <Link href="/loginPage" style={styles.loginLink}>
               Already have an account? Log in

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { signInWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
 import { auth } from '../config/firebase'; 
 import { Ionicons } from '@expo/vector-icons'; // Import Icons
+import GoogleSignIn from '../components/GoogleSignIn';
 
 export default function LoginPage() {
   const router = useRouter(); 
@@ -120,6 +121,8 @@ export default function LoginPage() {
                 <Text style={styles.loginText}>Log in</Text>
               )}
             </TouchableOpacity>
+
+            <GoogleSignIn />
 
             <View style={styles.bottomRow}>
               <View style={styles.navContainer}>
