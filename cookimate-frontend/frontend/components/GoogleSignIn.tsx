@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { TouchableOpacity, Text, StyleSheet, View, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
@@ -12,21 +12,21 @@ WebBrowser.maybeCompleteAuthSession();
 export default function GoogleSignIn() {
   const router = useRouter();
 
+  const redirectUri = "https://auth.expo.io/@chalini/frontend";
+
   const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId: '1034952464978-m0k1p6th6qpfjn871094egiq9mo2fojs.apps.googleusercontent.com',
     androidClientId: '1034952464978-vbbk2htt4omp04sn9o07q2h4tip3gm60.apps.googleusercontent.com',
     webClientId: '1034952464978-q5qrvmmbugj75m0e07s9q8vincr6upm7.apps.googleusercontent.com',
+    redirectUri: redirectUri, 
   });
 
   useEffect(() => {
     if (response?.type === 'success') {
       const { id_token } = response.params;
       const credential = GoogleAuthProvider.credential(id_token);
-      
-      // Sign in to Firebase with the Google Credential
       signInWithCredential(auth, credential)
         .then(() => {
-
           router.replace('/'); 
         })
         .catch((error) => {
@@ -42,7 +42,7 @@ export default function GoogleSignIn() {
       
       <TouchableOpacity 
         style={styles.googleButton} 
-        onPress={() => promptAsync()}
+        onPress={() => promptAsync()} 
         disabled={!request}
       >
         <Ionicons name="logo-google" size={20} color="black" style={styles.icon} />
