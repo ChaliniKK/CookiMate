@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "CookiMate",
+    "name": "frontend",
     "slug": "frontend",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,9 +8,13 @@
     "scheme": "frontend",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "originalFullName": "@chalini/frontend",
+    "currentFullName": "@chalini/frontend",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.meow.cookimate"  
+      "bundleIdentifier": "com.meow.cookimate" 
+    
+      
     },
     "android": {
       "package": "com.meow.cookimate",         

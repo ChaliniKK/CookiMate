@@ -18,7 +18,7 @@ export default function GoogleSignIn() {
     iosClientId: '1034952464978-m0k1p6th6qpfjn871094egiq9mo2fojs.apps.googleusercontent.com',
     androidClientId: '1034952464978-vbbk2htt4omp04sn9o07q2h4tip3gm60.apps.googleusercontent.com',
     webClientId: '1034952464978-q5qrvmmbugj75m0e07s9q8vincr6upm7.apps.googleusercontent.com',
-    redirectUri: redirectUri, 
+   // redirectUri: redirectUri, 
   });
 
   useEffect(() => {
