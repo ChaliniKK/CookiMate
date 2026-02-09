@@ -201,7 +201,7 @@ export default function SignupPage() {
               )}
             </TouchableOpacity>
 
-            <Link href="/loginPage" style={styles.loginLink}>
+            <Link href="/loginPage">
               Already have an account? Log in
             </Link>
 
