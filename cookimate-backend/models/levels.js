@@ -9,7 +9,7 @@ const levelSchema = new mongoose.Schema(
     pointsRequired: { type: Number, required: true },
     imageUrl: {
       type: String,
-      default: "https://img.icons8.com/color/96/000000/chef-hat.png",
+      
     },
   },
   {
