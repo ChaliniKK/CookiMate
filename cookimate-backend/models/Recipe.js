@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const RecipeSchema = new mongoose.Schema({
   id: {type: String, unique: true},
-  name: {type: String, required: true },
+  name: {type: String, required: true},
   description: String,
   ingredients_raw_str: [String],
   serving_size: String,
@@ -15,4 +15,4 @@ const RecipeSchema = new mongoose.Schema({
   image: String
 }, {collection: 'recipes'});
 
-module.exports = mongoose.model('Recipe', RecipeSchema);
+export default mongoose.model('Recipe', RecipeSchema);
