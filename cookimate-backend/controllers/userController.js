@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import Level from "../models/levels.js";
 
+
 // create a user
 
 export const createUser = async (req, res) => {
@@ -60,14 +61,14 @@ export const updateUser = async (req, res) => {
     const updatedUser = await User.findOneAndUpdate(
       { firebaseUid: req.params.uid },
       {
-        username : username,
-        name : name,
-        profilePic : profilePic,
+        username: username,
+        name: name,
+        profilePic: profilePic,
       },
       {
         new: true,
         runValidators: true,
-      }
+      },
     );
 
     if (!updatedUser) {
@@ -75,7 +76,6 @@ export const updateUser = async (req, res) => {
     }
 
     res.status(200).json(updatedUser);
-
   } catch (error) {
     if (error.code === 11000) {
       return res.status(400).json({ message: "Username already taken" });
@@ -85,3 +85,42 @@ export const updateUser = async (req, res) => {
   }
 };
 
+//the api that will let the user add recips to the fav (the id of the recips will be stored in the user collection under favorites array )
+
+export const addToFavorites = async (req, res) => {
+  try {
+    const { recipeId } = req.body;
+    const { uid } = req.params;
+
+    //check if the fronend had sent a valid id that is in the recips collection
+    const recipe = await Recipe.findById(recipeId);
+    if (!recipe) {
+      return res.status(404).json({ message: "Recipe not found" });
+    }
+    //get the logged in user object from the user collection
+    // Find user
+    const user = await User.findOne({ firebaseUid: uid });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+
+
+    }
+    //check if the recips id is already there this is importat as we can give the user a feedbcak msg
+
+    if (user.favorites.includes(recipeId)) {
+      return res.status(400).json({ message: "Recipe already in favorites" });
+    }
+
+
+    //this will add the recipe _id (built in mongodb) end of the faverecipe array
+    user.favorites.push(recipeId);
+    await user.save();
+    res.status(200).json({
+      message: "Recipe added to favorites",
+      
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
