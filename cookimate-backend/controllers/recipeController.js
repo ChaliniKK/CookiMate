@@ -2,12 +2,28 @@ import Recipe from "../models/Recipe.js";
 
 export const getAllRecipes = async (req, res) => {
   try {
-    //Filtering based on cuisine and meal type
-    const { cuisine, meal } = req.query;
+    const { searchQuery, cuisine, meal, diet } = req.query;
     let query = {};
 
-    if (cuisine) query.cuisine = cuisine;
-    if (meal) query.meal_type = meal;
+    // Search by name
+    if (searchQuery) {
+        query.name = {$regex: searchQuery, $options: 'i'};
+    }
+
+    // Filter by Meal Type
+    if (meal && meal !== 'All') {
+      query.meal_type = meal.toLowerCase(); 
+    }
+
+    // Filter by Cuisine
+    if (cuisine && cuisine !== 'All') {
+      query.cuisine = cuisine; 
+    }
+
+    // 4. Filter by Diet
+    if (diet && diet !== 'All') {
+      query.search_terms = diet.toLowerCase();
+    }
 
     //Returns all recipes
     const recipes = await Recipe.find();
