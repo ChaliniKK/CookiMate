@@ -3,6 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import connectDB from './config/db.js'; // Ensure the path is correct
 
+import userRoutes from "./routes/userRoutes.js";
+
 // Initialize Express
 const app = express();
 
@@ -20,6 +22,10 @@ app.get('/', (req, res) => {
 });
 
 // --- 4. START SERVER ---
+
+
+
+app.use("/api/users", userRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(` Server humming along on port ${PORT}`);
