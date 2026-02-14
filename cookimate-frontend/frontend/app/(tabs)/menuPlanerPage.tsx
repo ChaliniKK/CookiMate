@@ -2,6 +2,7 @@ import { Image, View, StyleSheet, Modal, Text, TouchableOpacity, Dimensions, Fla
 import React, { useState, useRef, useEffect } from 'react'; 
 import { Calendar } from 'react-native-calendars';
 import { Dropdown } from 'react-native-element-dropdown';
+import Constants from 'expo-constants'; // Added missing import
 import { globalStyle } from '../globalStyleSheet.style';
 
 const { width } = Dimensions.get('window');
@@ -13,7 +14,7 @@ const mealOptions = [
   { label: 'Snack 🥨', value: 'snack' },
 ];
 
-// Local default images for when no season is active
+// Local default images for when no season is active or fetch fails
 const defaultImages = [
   require('../../assets/images/planner_img1.png'),
   require('../../assets/images/planner_img2.png'),
@@ -25,32 +26,35 @@ const Page = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [mealType, setMealType] = useState(null);
   
-  // 1. Updated state to hold seasonal or default images
+  // holds seasonal or default images
   const [carouselImages, setCarouselImages] = useState<any[]>([]);
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // 2. Fetch seasonal recipes on component mount
+  // Fetch seasonal recipes
   useEffect(() => {
     const fetchSeasonalContent = async () => {
       try {
-        const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.4:5001/api';
+        // Automatically detect the IP of the machine running the server
+        const debuggerHost = Constants.expoConfig?.hostUri;
+        const address = debuggerHost ? debuggerHost.split(':')[0] : 'localhost';
+        const baseUrl = `http://${address}:5001/api`;
 
         const response = await fetch(`${baseUrl}/recipes/seasonal`);
         const data = await response.json();
 
         if (data && data.length > 0) {
-          // Map Cloudinary URLs to URI objects
+          // Map database images to URI objects
           const remoteImages = data.map((recipe: any) => ({ uri: recipe.image }));
-          // Maintain circular scroll by adding the first image to the end
+          // Add first image to end for a smooth infinite scroll loop
           setCarouselImages([...remoteImages, remoteImages[0]]);
         } else {
-          // Fallback to local defaults
+          // Fallback to local assets if no seasonal recipes match today's date
           setCarouselImages([...defaultImages, defaultImages[0]]);
         }
       } catch (error) {
         console.error("Seasonal Fetch Error:", error);
-        // Fallback on network failure
+        // Fallback to local assets if the server is offline
         setCarouselImages([...defaultImages, defaultImages[0]]);
       }
     };
@@ -58,7 +62,7 @@ const Page = () => {
     fetchSeasonalContent();
   }, []);
 
-  // Auto scroll timer
+  // Auto-scroll logic for carousel
   useEffect(() => {
     if (carouselImages.length === 0) return;
 
@@ -81,13 +85,13 @@ const Page = () => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     const scrollValue = contentOffsetX / width;
     
+    // Reset to index 0 when we reach the duplicated last item for infinite effect
     if (scrollValue >= carouselImages.length - 1) {
       flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
       setCurrentIndex(0);
     }
   };
 
-  // 3. Updated renderItem to handle both URI and local require
   const renderItem = ({ item }: { item: any }) => (
     <Image 
       source={item.uri ? { uri: item.uri } : item} 
@@ -105,6 +109,7 @@ const Page = () => {
         }}
       />
 
+      {/* Plan Meal Modal */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -151,6 +156,7 @@ const Page = () => {
         </View>
       </Modal>
 
+      {/* Seasonal / Default Image Carousel */}
       <View style={styles.carouselWrapper}>
         <FlatList
           ref={flatListRef}
@@ -229,7 +235,6 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 15,
-    borderRadius: 25,
   },
   styledButton: {
     backgroundColor: '#522F2F', 
