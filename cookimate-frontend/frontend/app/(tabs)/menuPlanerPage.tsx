@@ -34,8 +34,9 @@ const Page = () => {
   useEffect(() => {
     const fetchSeasonalContent = async () => {
       try {
-        // REPLACE WITH YOUR ACTUAL BACKEND IP ADDRESS
-        const response = await fetch('http://YOUR_SERVER_IP:5000/api/recipes/seasonal');
+        const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.4:5001/api';
+
+        const response = await fetch(`${baseUrl}/recipes/seasonal`);
         const data = await response.json();
 
         if (data && data.length > 0) {

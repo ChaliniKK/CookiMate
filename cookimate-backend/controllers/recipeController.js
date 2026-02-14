@@ -1,4 +1,5 @@
 import Recipe from "../models/Recipe.js";
+import SeasonalRecipe from "../models/SeasonalRecipe.js";
 
 export const getAllRecipes = async (req, res) => {
   try {
@@ -51,8 +52,10 @@ export const getSeasonalRecipes = async (req, res) => {
     const currentMonth = today.getUTCMonth() + 1; 
     const currentDay = today.getUTCDate();
 
-    // Find all recipes where the current date falls between the start and end ranges
-    const recipes = await Recipe.find({
+    console.log(`Filtering for: Month ${currentMonth}, Day ${currentDay}`);
+
+    // This looks for recipes where today's date falls within the start/end range
+    const recipes = await SeasonalRecipe.find({
       $and: [
         { start_month: { $lte: currentMonth } },
         { end_month: { $gte: currentMonth } },
@@ -61,8 +64,10 @@ export const getSeasonalRecipes = async (req, res) => {
       ]
     });
 
+    console.log("Filtered Seasonal Recipes found:", recipes.length);
     res.json(recipes);
   } catch (error) {
+    console.error("Seasonal Fetch Error:", error.message);
     res.status(500).json({ message: "Seasonal Fetch Error: " + error.message });
   }
 };
