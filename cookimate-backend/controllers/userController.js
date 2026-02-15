@@ -61,14 +61,14 @@ export const updateUser = async (req, res) => {
     const updatedUser = await User.findOneAndUpdate(
       { firebaseUid: req.params.uid },
       {
-        username: username,
-        name: name,
-        profilePic: profilePic,
+        username,
+        name,
+        profilePic,
       },
       {
-        new: true,
+        returnDocument: "after", // ✅ updated way
         runValidators: true,
-      },
+      }
     );
 
     if (!updatedUser) {
@@ -84,6 +84,7 @@ export const updateUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 //the api that will let the user add recips to the fav (the id of the recips will be stored in the user collection under favorites array )
 
