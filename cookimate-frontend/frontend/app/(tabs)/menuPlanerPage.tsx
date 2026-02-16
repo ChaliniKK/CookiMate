@@ -16,6 +16,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Calendar } from "react-native-calendars";
 import Constants from "expo-constants";
 import { globalStyle } from "../globalStyleSheet.style";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 const { width, height } = Dimensions.get("window");
 const CAROUSEL_WIDTH = width * 0.9;
@@ -44,6 +45,17 @@ const Page = () => {
   const [carouselImages, setCarouselImages] = useState<any[]>([]);
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const router = useRouter();
+  const { openModalWithDate } = useLocalSearchParams();
+
+  useEffect(() => {
+    if (openModalWithDate) {
+      setSelectedDate(openModalWithDate as string);
+      setIsAddingMeal(true);
+      setIsModalVisible(true);
+      router.setParams({ openModalWithDate: undefined });
+    }
+  }, [openModalWithDate]);
 
   useEffect(() => {
     const fetchSeasonalContent = async () => {
@@ -182,7 +194,17 @@ const Page = () => {
                         styles.categoryButton,
                         { backgroundColor: item.color },
                       ]}
-                      onPress={handleCloseModal}
+                      onPress={() => {
+                        setIsModalVisible(false);
+                        const categoryType = item.label.split(" ")[0].trim();
+                        router.push({
+                          pathname: "/myRecipes",
+                          params: { 
+                            selectedCategory: categoryType,
+                            selectedDate: selectedDate 
+                          },
+                        });
+                      }}
                     >
                       <Text style={styles.categoryButtonText}>
                         {item.label}
