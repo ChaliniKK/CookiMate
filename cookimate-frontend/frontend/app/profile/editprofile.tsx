@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { auth } from "../../config/firebase";
 import {
   View,
   Text,
@@ -15,11 +16,14 @@ import {
   Keyboard,             
 } from "react-native";
 import axios from "axios";
+import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { globalStyle } from "../globalStyleSheet.style";
 
-const API_URL = "http://192.168.8.184:5000";
+        const debuggerHost = Constants.expoConfig?.hostUri;
+        const address = debuggerHost ? debuggerHost.split(":")[0] : "localhost";
+        const API_URL = `http://${address}:5000`
 
 const AVATAR_OPTIONS = [
   "https://res.cloudinary.com/cookimate-images/image/upload/v1770965619/profile_pic1_plo6pj.png",
@@ -29,7 +33,8 @@ const AVATAR_OPTIONS = [
 
 const EditProfile = () => {
   const router = useRouter();
-  const uid = "firebase9991";
+  const currentUser = auth.currentUser;
+  const uid = currentUser?.uid; 
 
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");

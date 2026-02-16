@@ -15,12 +15,13 @@ import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons'; 
 import axios from 'axios'; // ✅ Added Axios
-
+import Constants from "expo-constants";
 import { auth } from '../../config/firebase'; 
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signOut } from 'firebase/auth'; 
 
-// ✅ Match this to your Backend IP
-const API_URL = "http://192.168.8.184:5000";
+ const debuggerHost = Constants.expoConfig?.hostUri;
+        const address = debuggerHost ? debuggerHost.split(":")[0] : "localhost";
+        const API_URL = `http://${address}:5000`
 
 export default function SignupPage() {
   const router = useRouter();
@@ -112,7 +113,7 @@ export default function SignupPage() {
       // 2. Update the Firebase Profile with Username
       await updateProfile(user, { displayName: username });
 
-      // 3. Create the user in your MongoDB via Node.js Backend ✅
+      // 3. Create the user in your MongoDB via Node.js Backend 
       await axios.post(`${API_URL}/api/users`, {
         firebaseUid: user.uid,
         username: username,
