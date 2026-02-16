@@ -16,11 +16,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Dropdown } from "react-native-element-dropdown";
 import axios from "axios";
+import Constants from "expo-constants";
 
 const { width } = Dimensions.get("window");
 const IMAGE_SIZE = width * 0.28;
 
-// --- 1. Added Cuisine Options ---
+// --- Get Dynamic IP for API calls ---
+const debuggerHost = Constants.expoConfig?.hostUri;
+const address = debuggerHost ? debuggerHost.split(":")[0] : "localhost";
+const API_URL = `http://${address}:5000`;
+
 const cuisineOptions = [
   { label: "All Cuisines", value: "All" },
   { label: "Italian 🍝", value: "Italian" },
@@ -56,29 +61,22 @@ const MyRecipesPage = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [meal, setMeal] = useState("All");
-  const [time, setTime] = useState("All");
-  const [diet, setDiet] = useState("All");
-  // --- 2. Added Cuisine State ---
   const [cuisine, setCuisine] = useState("All");
+  const [diet, setDiet] = useState("All");
+  const [time, setTime] = useState("All"); 
 
   const fetchRecipes = async () => {
     setLoading(true);
     try {
-      // Use the IP that works for you (env variable or hardcoded)
-      const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.6:5000';
-      
-      const response = await axios.get(
-        `${API_URL}/api/recipes`,
-        {
-          params: {
-            searchQuery: searchQuery,
-            meal: meal !== "All" ? meal : undefined,
-            diet: diet !== "All" ? diet : undefined,
-            // --- 3. Added Cuisine to Params ---
-            cuisine: cuisine !== "All" ? cuisine : undefined,
-          },
+      const response = await axios.get(`${API_URL}/api/recipes`, {
+        params: {
+          searchQuery: searchQuery,
+          meal: meal !== "All" ? meal : undefined,
+          diet: diet !== "All" ? diet : undefined,
+          cuisine: cuisine !== "All" ? cuisine : undefined,
+       
         },
-      );
+      });
       setRecipes(response.data);
     } catch (error) {
       console.error("Backend error:", error);
@@ -87,14 +85,16 @@ const MyRecipesPage = () => {
     }
   };
 
-  // --- 4. Added cuisine to dependency array ---
   useEffect(() => {
     fetchRecipes();
-  }, [searchQuery, meal, diet, cuisine]);
+  }, [searchQuery, meal, diet, cuisine, time]);
 
   const renderRecipeItem = ({ item }: { item: any }) => (
     <View style={styles.card}>
-      <Image source={{ uri: item.image }} style={styles.cardImage} />
+      <Image 
+        source={{ uri: item.image }} 
+        style={styles.cardImage} 
+      />
       <View style={styles.cardContent}>
         <Text style={styles.recipeTitle}>{item.name}</Text>
         <Text style={styles.recipeDescription} numberOfLines={2}>
@@ -102,7 +102,7 @@ const MyRecipesPage = () => {
         </Text>
         <TouchableOpacity
           style={styles.viewButton}
-          onPress={() => router.push(`/recipe/${item.id}` as any)} // Use item.id (numeric) instead of item._id
+          onPress={() => router.push(`/recipe/${item.id}` as any)}
         >
           <Text style={styles.viewButtonText}>View Recipe</Text>
         </TouchableOpacity>
@@ -130,7 +130,6 @@ const MyRecipesPage = () => {
         </View>
       </View>
 
-      {/* --- 5. Changed to ScrollView for better layout with 4 items --- */}
       <View style={styles.filterWrapper}>
         <ScrollView 
           horizontal 
@@ -151,7 +150,7 @@ const MyRecipesPage = () => {
             style={styles.dropdown}
             placeholderStyle={styles.dropText}
             selectedTextStyle={styles.dropText}
-            data={cuisineOptions} // New Cuisine Dropdown
+            data={cuisineOptions}
             labelField="label"
             valueField="value"
             value={cuisine}
@@ -227,8 +226,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   searchInput: { flex: 1, fontSize: 16, color: "#5F4436" },
-  
-  // Updated Styles for Scrolling Filters
   filterWrapper: {
     height: 50,
     marginBottom: 10,
@@ -246,7 +243,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   dropText: { color: "white", fontSize: 12, fontWeight: "bold", textAlign: 'center' },
-  
   listContent: { paddingHorizontal: 20, paddingBottom: 40 },
   card: {
     flexDirection: "row",
