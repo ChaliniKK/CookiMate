@@ -307,6 +307,8 @@ export const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
+    borderColor: "white",
+    borderWidth: 1,
   },
   seasonalButtonText: { color: "#f2ece2", fontSize: 14, fontWeight: "bold" },
 });
