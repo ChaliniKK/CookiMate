@@ -3,22 +3,22 @@ import SeasonalRecipe from "../models/SeasonalRecipe.js";
 
 export const getAllRecipes = async (req, res) => {
   try {
-    const { searchQuery, cuisine, meal, diet } = req.query;
+    const { searchQuery, cuisine, meal, diet, time } = req.query;
     let query = {};
 
     // Search by name
     if (searchQuery) {
-        query.name = {$regex: searchQuery, $options: 'i'};
+      query.name = { $regex: searchQuery, $options: 'i' };
     }
 
     // Filter by Meal Type
     if (meal && meal !== 'All') {
-      query.meal_type = meal.toLowerCase(); 
+      query.meal_type = meal.toLowerCase();
     }
 
     // Filter by Cuisine
     if (cuisine && cuisine !== 'All') {
-      query.cuisine = cuisine; 
+      query.cuisine = cuisine;
     }
 
     // Filter by Diet
@@ -26,7 +26,22 @@ export const getAllRecipes = async (req, res) => {
       query.search_terms = diet.toLowerCase();
     }
 
-    //Returns all recipes
+    // Filter by Time 
+    if (time && time !== 'All') {
+      if (time === "15") {
+        // Under 15: Matches 1-9 OR 10-14 OR exactly 15
+        query.totalTime = { $regex: /^([1-9]|1[0-4]|15)\s*minutes/i };
+      } 
+      else if (time === "30") {
+        // 15-30: Matches 15-19 OR 2[0-9] OR 30
+        query.totalTime = { $regex: /^(1[5-9]|2[0-9]|30)\s*minutes/i };
+      } 
+      else if (time === "60") {
+        // 30-60: Matches 3[0-9] OR 4[0-9] OR 5[0-9] OR 60
+        query.totalTime = { $regex: /^(3[1-9]|[4-5][0-9]|60)\s*minutes/i };
+      }
+    }
+
     const recipes = await Recipe.find(query);
     res.json(recipes);
   } catch (error) {
