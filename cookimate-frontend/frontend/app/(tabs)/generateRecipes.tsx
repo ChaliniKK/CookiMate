@@ -14,8 +14,6 @@ import {
   PanResponder,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-
-// --- Global Style Import ---
 import { globalStyle } from "../globalStyleSheet.style";
 
 const TAB_BAR_HEIGHT = 65;
@@ -30,7 +28,6 @@ const SERVINGS = ["1", "2", "4", "6+"];
 export default function GenerateRecipesPage() {
   const { height } = useWindowDimensions();
 
-  // The resting position (collapsed) is the screen height minus the peek bar and tab bar
   const COLLAPSED_Y = height - PEEK_HEIGHT - TAB_BAR_HEIGHT;
   const EXPANDED_Y = 0;
 
@@ -45,7 +42,6 @@ export default function GenerateRecipesPage() {
 
   const slideAnim = useRef(new Animated.Value(COLLAPSED_Y)).current;
 
-  // --- Reset Function: Clears everything ---
   const handleReset = () => {
     setSelectedIngredients([]);
     setCuisine(null);
@@ -65,11 +61,9 @@ export default function GenerateRecipesPage() {
     }).start();
   };
 
-  // --- PanResponder: This handles the swipe down ---
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Detects if the user is swiping down specifically
         return Math.abs(gestureState.dy) > 10 && gestureState.dy > 0;
       },
       onPanResponderMove: (_, gestureState) => {
@@ -78,7 +72,6 @@ export default function GenerateRecipesPage() {
         }
       },
       onPanResponderRelease: (_, gestureState) => {
-        // If swiped down more than 100px, snap to the bottom button
         if (gestureState.dy > 100) {
           togglePanel(false);
         } else {
@@ -112,35 +105,32 @@ export default function GenerateRecipesPage() {
           { height: height, transform: [{ translateY: slideAnim }] },
         ]}
       >
-        {/* --- 1. THE "PEEK" BUTTON (Visible when minimized) --- */}
+        {/* --- 1. CENTERED "GENERATE RECIPES" PEEK BUTTON --- */}
         {!isExpanded && (
-          <TouchableOpacity
-            style={styles.peekButtonContainer}
-            onPress={() => togglePanel(true)}
-            activeOpacity={0.9}
-          >
-            <View style={styles.peekButton}>
+          <View style={styles.peekButtonWrapper}>
+            <TouchableOpacity
+              style={styles.peekButton}
+              onPress={() => togglePanel(true)}
+              activeOpacity={0.9}
+            >
               <View style={styles.flexRow}>
-                <Ionicons name="sparkles" size={20} color="#4A3B2C" />
-                <Text style={styles.peekTitle}>Ready to cook?</Text>
+                <Ionicons name="sparkles" size={18} color="#4A3B2C" />
+                <Text style={styles.peekTitle}>Generate Recipes</Text>
               </View>
-              <Ionicons name="chevron-up" size={20} color="#4A3B2C" />
-            </View>
-          </TouchableOpacity>
+              <Ionicons name="chevron-up" size={18} color="#4A3B2C" />
+            </TouchableOpacity>
+          </View>
         )}
 
         {/* --- 2. THE EXPANDED VIEW --- */}
         <View style={{ flex: 1, opacity: isExpanded ? 1 : 0 }}>
-          {/* Draggable Header with Reset Button */}
           <View {...panResponder.panHandlers} style={styles.headerArea}>
             <View style={styles.dragHandle} />
             <View style={styles.headerRow}>
               <TouchableOpacity onPress={() => togglePanel(false)}>
                 <Ionicons name="close" size={24} color="#9CA3AF" />
               </TouchableOpacity>
-
               <Text style={styles.headerTitle}>Recipe Builder</Text>
-
               <TouchableOpacity
                 onPress={handleReset}
                 style={styles.resetContainer}
@@ -159,7 +149,7 @@ export default function GenerateRecipesPage() {
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
             >
-              {/* Search Bar - Repositioned further down */}
+              {/* Search Bar - Increased top padding */}
               <View style={styles.searchSection}>
                 <Ionicons
                   name="search"
@@ -211,7 +201,7 @@ export default function GenerateRecipesPage() {
 
               <View style={styles.divider} />
 
-              {/* Filters */}
+              {/* Filters with increased spacing to fill screen */}
               <FilterRow
                 title="Cuisine"
                 icon="restaurant-outline"
@@ -248,7 +238,7 @@ export default function GenerateRecipesPage() {
                   color="#4A3B2C"
                   style={{ marginRight: 8 }}
                 />
-                <Text style={styles.generateBtnText}>Generate Recipes</Text>
+                <Text style={styles.generateBtnText}>Create My Menu</Text>
               </TouchableOpacity>
             </ScrollView>
           </KeyboardAvoidingView>
@@ -258,7 +248,6 @@ export default function GenerateRecipesPage() {
   );
 }
 
-// Sub-component for filters
 const FilterRow = ({ title, icon, data, selected, onSelect }: any) => (
   <View style={styles.filterRowContainer}>
     <View style={styles.filterHeader}>
@@ -303,11 +292,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8F4EF",
     borderTopLeftRadius: 35,
     borderTopRightRadius: 35,
+    paddingTop: 35,
     zIndex: 9999,
   },
 
-  // Peek Bar Styles
-  peekButtonContainer: { paddingHorizontal: 20, paddingTop: 15 },
+  // Centered Peek Button Logic
+  peekButtonWrapper: {
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 15,
+  },
   peekButton: {
     backgroundColor: "#EBC390",
     flexDirection: "row",
@@ -315,12 +310,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 15,
     paddingHorizontal: 25,
+    paddingBottom:20,
     borderRadius: 50,
+    width: "85%", // Centered pill shape
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   flexRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   peekTitle: { fontSize: 16, fontWeight: "bold", color: "#4A3B2C" },
 
-  // Header Styles
   headerArea: {
     paddingTop: 20,
     paddingBottom: 15,
@@ -347,17 +348,16 @@ const styles = StyleSheet.create({
   resetContainer: { padding: 5 },
   resetText: { color: "#B45309", fontWeight: "800", fontSize: 14 },
 
-  scrollBody: { paddingHorizontal: 20, paddingBottom: 40 },
+  scrollBody: { paddingHorizontal: 20, paddingBottom: 60 },
 
-  // Search Section
   searchSection: {
     backgroundColor: "#FFF",
     borderRadius: 20,
     padding: 14,
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 20, // Moves the search bar down
-    marginBottom: 20,
+    marginTop: 60, // Added significant padding at top of search bar
+    marginBottom: 35,
     borderWidth: 1,
     borderColor: "#F3F4F6",
   },
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingLeft: 5,
   },
-  quickAddScroll: { marginBottom: 25 },
+  quickAddScroll: { marginBottom: 35 },
   quickAddBtn: {
     backgroundColor: "#FFF",
     flexDirection: "row",
@@ -393,10 +393,10 @@ const styles = StyleSheet.create({
   },
   quickAddText: { fontWeight: "600", color: "#4A3B2C" },
 
-  divider: { height: 1, backgroundColor: "#E5E7EB", marginBottom: 25 },
+  divider: { height: 1, backgroundColor: "#E5E7EB", marginBottom: 35 },
 
-  // Filter Styles
-  filterRowContainer: { marginBottom: 25 },
+  // Spacing between filters increased to fill screen
+  filterRowContainer: { marginBottom: 45 },
   filterHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 18,
     borderRadius: 22,
-    marginTop: 10,
+    marginTop: 20,
   },
   generateBtnText: { color: "#4A3B2C", fontSize: 18, fontWeight: "900" },
 });
