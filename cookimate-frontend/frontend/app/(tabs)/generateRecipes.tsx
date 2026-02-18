@@ -18,7 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { globalStyle } from "../globalStyleSheet.style";
 
 const TAB_BAR_HEIGHT = 65;
-const PEEK_HEIGHT = 125;
+const PEEK_HEIGHT = 180;
 
 const QUICK_ADDS = ["Beef", "Pasta", "Onion", "Garlic", "Chicken", "Shrimp"];
 
@@ -381,11 +381,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 18,
-    paddingHorizontal: 25,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
     marginBottom: 45,
     borderRadius: 50,
-    width: "88%",
+    width: "60%",
     elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
