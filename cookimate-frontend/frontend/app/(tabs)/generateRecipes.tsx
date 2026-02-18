@@ -12,17 +12,16 @@ import {
   TouchableOpacity,
   ScrollView,
   PanResponder,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { globalStyle } from "../globalStyleSheet.style";
 
 const TAB_BAR_HEIGHT = 65;
-const PEEK_HEIGHT = 85;
+const PEEK_HEIGHT = 125;
 
-// Updated from final_recipes.json
 const QUICK_ADDS = ["Beef", "Pasta", "Onion", "Garlic", "Chicken", "Shrimp"];
 
-// All unique cuisines found in the file
 const CUISINES = [
   "American",
   "Asian",
@@ -44,7 +43,6 @@ const CUISINES = [
   "Western",
 ];
 
-// All unique meal types found in the file
 const MEAL_TYPES = [
   "Appetizer",
   "Breakfast",
@@ -54,20 +52,19 @@ const MEAL_TYPES = [
   "Lunch",
   "Snack",
 ];
-
 const TIMES = ["< 15m", "< 30m", "< 45m", "1h+"];
 const SERVINGS = ["1", "2", "4", "6+"];
 
 export default function GenerateRecipesPage() {
   const { height } = useWindowDimensions();
 
+  const TOP_MARGIN = 96;
   const COLLAPSED_Y = height - PEEK_HEIGHT - TAB_BAR_HEIGHT;
-  const EXPANDED_Y = 0;
+  const EXPANDED_Y = TOP_MARGIN;
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [ingredientInput, setIngredientInput] = useState("");
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
-
   const [cuisine, setCuisine] = useState<string | null>(null);
   const [mealType, setMealType] = useState<string | null>(null);
   const [prepTime, setPrepTime] = useState<string | null>(null);
@@ -75,14 +72,19 @@ export default function GenerateRecipesPage() {
 
   const slideAnim = useRef(new Animated.Value(COLLAPSED_Y)).current;
 
-  const handleReset = () => {
-    setSelectedIngredients([]);
-    setCuisine(null);
-    setMealType(null);
-    setPrepTime(null);
-    setServings(null);
-    setIngredientInput("");
-  };
+  // Fade out content as we collapse
+  const contentOpacity = slideAnim.interpolate({
+    inputRange: [EXPANDED_Y, EXPANDED_Y + 150],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
+  // Fade in peek button as we collapse
+  const peekOpacity = slideAnim.interpolate({
+    inputRange: [COLLAPSED_Y - 100, COLLAPSED_Y],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
 
   const togglePanel = (open: boolean) => {
     setIsExpanded(open);
@@ -94,22 +96,26 @@ export default function GenerateRecipesPage() {
     }).start();
   };
 
+  const handleReset = () => {
+    setSelectedIngredients([]);
+    setCuisine(null);
+    setMealType(null);
+    setPrepTime(null);
+    setServings(null);
+    setIngredientInput("");
+  };
+
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dy) > 10 && gestureState.dy > 0;
-      },
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        isExpanded && gestureState.dy > 5,
       onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dy > 0) {
-          slideAnim.setValue(gestureState.dy);
-        }
+        const newY = EXPANDED_Y + gestureState.dy;
+        if (newY >= EXPANDED_Y) slideAnim.setValue(newY);
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 100) {
-          togglePanel(false);
-        } else {
-          togglePanel(true);
-        }
+        if (gestureState.dy > 120) togglePanel(false);
+        else togglePanel(true);
       },
     }),
   ).current;
@@ -132,39 +138,53 @@ export default function GenerateRecipesPage() {
         resizeMode="cover"
       />
 
+      {isExpanded && (
+        <Pressable style={styles.backdrop} onPress={() => togglePanel(false)} />
+      )}
+
       <Animated.View
         style={[
           styles.slidingPanel,
-          { height: height, transform: [{ translateY: slideAnim }] },
+          {
+            height: height - TOP_MARGIN,
+            transform: [{ translateY: slideAnim }],
+          },
         ]}
       >
-        {!isExpanded && (
-          <View style={styles.peekButtonWrapper}>
-            <TouchableOpacity
-              style={styles.peekButton}
-              onPress={() => togglePanel(true)}
-              activeOpacity={0.9}
-            >
-              <View style={styles.flexRow}>
-                <Ionicons name="sparkles" size={18} color="#4A3B2C" />
-                <Text style={styles.peekTitle}>Generate Recipes</Text>
-              </View>
-              <Ionicons name="chevron-up" size={18} color="#4A3B2C" />
-            </TouchableOpacity>
-          </View>
-        )}
+        {/* --- PEEK BUTTON SECTION --- */}
+        <Animated.View
+          style={[styles.peekButtonWrapper, { opacity: peekOpacity }]}
+        >
+          <TouchableOpacity
+            style={styles.peekButton}
+            onPress={() => togglePanel(true)}
+            activeOpacity={0.9}
+            disabled={isExpanded}
+          >
+            <View style={styles.flexRow}>
+              <Ionicons name="sparkles" size={20} color="#4A3B2C" />
+              <Text style={styles.peekTitle}>Generate Recipes</Text>
+            </View>
+            <Ionicons name="chevron-up" size={20} color="#4A3B2C" />
+          </TouchableOpacity>
+        </Animated.View>
 
-        <View style={{ flex: 1, opacity: isExpanded ? 1 : 0 }}>
+        {/* --- EXPANDED CONTENT SECTION --- */}
+        <Animated.View
+          style={{ flex: 1, opacity: contentOpacity, marginTop: 10 }}
+          pointerEvents={isExpanded ? "auto" : "none"}
+        >
           <View {...panResponder.panHandlers} style={styles.headerArea}>
             <View style={styles.dragHandle} />
             <View style={styles.headerRow}>
-              <TouchableOpacity onPress={() => togglePanel(false)}>
-                <Ionicons name="close" size={24} color="#9CA3AF" />
+              <TouchableOpacity onPress={() => togglePanel(false)} hitSlop={20}>
+                <Ionicons name="close" size={26} color="#9CA3AF" />
               </TouchableOpacity>
               <Text style={styles.headerTitle}>Recipe Builder</Text>
               <TouchableOpacity
                 onPress={handleReset}
                 style={styles.resetContainer}
+                hitSlop={20}
               >
                 <Text style={styles.resetText}>Reset</Text>
               </TouchableOpacity>
@@ -260,7 +280,14 @@ export default function GenerateRecipesPage() {
                 onSelect={setServings}
               />
 
-              <TouchableOpacity style={styles.generateBtn} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.generateBtn}
+                activeOpacity={0.8}
+                onPress={() => {
+                  console.log("Generating...");
+                  togglePanel(false);
+                }}
+              >
                 <Ionicons
                   name="flash"
                   size={18}
@@ -271,7 +298,7 @@ export default function GenerateRecipesPage() {
               </TouchableOpacity>
             </ScrollView>
           </KeyboardAvoidingView>
-        </View>
+        </Animated.View>
       </Animated.View>
     </View>
   );
@@ -313,52 +340,54 @@ const FilterRow = ({ title, icon, data, selected, onSelect }: any) => (
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.1)",
+    zIndex: 9998,
+  },
   slidingPanel: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: "#F8F4EF",
-    borderTopLeftRadius: 35,
-    borderTopRightRadius: 35,
-    paddingTop: 35,
     zIndex: 9999,
   },
   peekButtonWrapper: {
+    position: "absolute",
+    top: 0,
+    height: PEEK_HEIGHT,
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: 15,
+    paddingTop: 10,
   },
   peekButton: {
     backgroundColor: "#EBC390",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 15,
+    paddingVertical: 18,
     paddingHorizontal: 25,
-    paddingBottom: 20,
+    marginBottom: 45,
     borderRadius: 50,
-    width: "85%",
+    width: "88%",
+    elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
   },
   flexRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  peekTitle: { fontSize: 16, fontWeight: "bold", color: "#4A3B2C" },
+  peekTitle: { fontSize: 17, fontWeight: "bold", color: "#4A3B2C" },
   headerArea: {
-    paddingTop: 20,
+    paddingTop: 15,
     paddingBottom: 15,
     alignItems: "center",
-    backgroundColor: "#F8F4EF",
-    borderTopLeftRadius: 35,
-    borderTopRightRadius: 35,
   },
   dragHandle: {
-    width: 40,
-    height: 4,
+    width: 45,
+    height: 5,
     backgroundColor: "#E5E7EB",
     borderRadius: 10,
     marginBottom: 15,
@@ -370,17 +399,17 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 20,
   },
-  headerTitle: { fontSize: 22, fontWeight: "900", color: "#4A3B2C" },
+  headerTitle: { fontSize: 24, fontWeight: "900", color: "#4A3B2C" },
   resetContainer: { padding: 5 },
-  resetText: { color: "#B45309", fontWeight: "800", fontSize: 14 },
-  scrollBody: { paddingHorizontal: 20, paddingBottom: 60 },
+  resetText: { color: "#B45309", fontWeight: "800", fontSize: 15 },
+  scrollBody: { paddingHorizontal: 20, paddingBottom: 120 },
   searchSection: {
     backgroundColor: "#FFF",
     borderRadius: 20,
     padding: 14,
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 10,
     marginBottom: 35,
     borderWidth: 1,
     borderColor: "#F3F4F6",
@@ -388,14 +417,14 @@ const styles = StyleSheet.create({
   chipContainer: { flexDirection: "row", flexWrap: "wrap", flex: 1, gap: 5 },
   chip: {
     backgroundColor: "#F3D8B6",
-    paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 10,
   },
   chipText: { fontSize: 12, fontWeight: "700", color: "#4A3B2C" },
   textInput: { flex: 1, minWidth: 100, fontSize: 16 },
   label: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "800",
     color: "#9CA3AF",
     textTransform: "uppercase",
@@ -423,11 +452,11 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 12,
   },
-  filterTitle: { fontSize: 16, fontWeight: "800", color: "#4A3B2C" },
+  filterTitle: { fontSize: 17, fontWeight: "800", color: "#4A3B2C" },
   filterTag: {
     backgroundColor: "#FFF",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 11,
+    paddingHorizontal: 18,
     borderRadius: 15,
     borderWidth: 1,
     borderColor: "#F3F4F6",
@@ -440,9 +469,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 18,
+    paddingVertical: 20,
     borderRadius: 22,
-    marginTop: 20,
+    marginTop: 10,
   },
   generateBtnText: { color: "#4A3B2C", fontSize: 18, fontWeight: "900" },
 });
