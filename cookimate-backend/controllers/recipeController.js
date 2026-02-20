@@ -3,45 +3,30 @@ import SeasonalRecipe from "../models/SeasonalRecipe.js";
 
 export const getAllRecipes = async (req, res) => {
   try {
-    const { searchQuery, cuisine, meal, diet, time } = req.query;
+    const { searchQuery, cuisine, meal, diet } = req.query;
     let query = {};
 
-    // 1. Search Query Logic
-    if (searchQuery && searchQuery.trim() !== "") {
-      query.name = { $regex: searchQuery, $options: 'i' };
+    // Search by name
+    if (searchQuery) {
+        query.name = {$regex: searchQuery, $options: 'i'};
     }
 
-    // 2. Meal Filter
+    // Filter by Meal Type
     if (meal && meal !== 'All') {
-      query.meal_type = meal.toLowerCase();
+      query.meal_type = meal.toLowerCase(); 
     }
 
-    // 3. Cuisine Filter
+    // Filter by Cuisine
     if (cuisine && cuisine !== 'All') {
       query.cuisine = cuisine; 
     }
 
-    // 4. Diet Filter
+    // Filter by Diet
     if (diet && diet !== 'All') {
       query.search_terms = diet.toLowerCase();
     }
 
-    // 5. Time Filter Logic
-    if (time && time !== 'All') {
-      if (time === "15") {
-        // Strict range: 1 to 15
-        query.totalTime = { $regex: /^([1-9]|1[0-4]|15)\s*minutes/i };
-      } 
-      else if (time === "30") {
-        // Strict range: 15 to 30
-        query.totalTime = { $regex: /^(1[5-9]|2[0-9]|30)\s*minutes/i };
-      } 
-      else if (time === "60") {
-        // Strict range: 30 to 60
-        query.totalTime = { $regex: /^(3[1-9]|[4-5][0-9]|60)\s*minutes/i };
-      }
-    }
-
+    //Returns all recipes
     const recipes = await Recipe.find(query);
     res.json(recipes);
   } catch (error) {
