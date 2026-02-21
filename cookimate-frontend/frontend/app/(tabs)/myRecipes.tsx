@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { Dropdown } from "react-native-element-dropdown";
 import axios from "axios";
 import Constants from "expo-constants";
@@ -149,25 +149,24 @@ const MyRecipesPage = () => {
   };
 
   const fetchRecipes = async () => {
-  setLoading(true);
-  try {
-    const response = await axios.get(`${API_URL}/api/recipes`, {
-      params: {
-        searchQuery: searchQuery,
-        // Send 'undefined' if 'All' so the backend doesn't try to filter it
-        meal: meal !== "All" ? meal : undefined,
-        diet: diet !== "All" ? diet : undefined,
-        cuisine: cuisine !== "All" ? cuisine : undefined,
-        time: time !== "All" ? time : undefined, 
-      },
-    });
-    setRecipes(response.data);
-  } catch (error) {
-    console.error("Backend error:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/api/recipes`, {
+        params: {
+          searchQuery: searchQuery,
+          meal: meal !== "All" ? meal : undefined,
+          diet: diet !== "All" ? diet : undefined,
+          cuisine: cuisine !== "All" ? cuisine : undefined,
+          time: time !== "All" ? time : undefined, 
+        },
+      });
+      setRecipes(response.data);
+    } catch (error) {
+      console.error("Backend error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchRecipes();
@@ -176,6 +175,7 @@ const MyRecipesPage = () => {
   const handleBackToPlanner = () => {
     const dateToPass = selectedDate;
     setSelectedRecipeId(null);
+    setSelectedRecipeData(null);
     router.setParams({ selectedCategory: undefined, selectedDate: undefined });
     router.push({
       pathname: "/menuPlanerPage",
@@ -185,16 +185,26 @@ const MyRecipesPage = () => {
 
   const handleAddRecipeToPlanner = () => {
     if (!selectedRecipeData) return;
+    const dateToPass = selectedDate;
+    const recipeData = selectedRecipeData;
+    const category = selectedCategory;
+
+    setSelectedRecipeId(null);
+    setSelectedRecipeData(null);
+    router.setParams({ selectedCategory: undefined, selectedDate: undefined });
+
     router.push({
       pathname: "/menuPlanerPage",
       params: { 
-        openModalWithDate: selectedDate,
-        newRecipeId: selectedRecipeData.id,
-        newRecipeName: selectedRecipeData.name,
-        newRecipeImage: selectedRecipeData.image,
-        newRecipeCategory: selectedCategory
+        openModalWithDate: dateToPass,
+        newRecipeId: recipeData.id,
+        newRecipeName: recipeData.name,
+        newRecipeImage: recipeData.image,
+        newRecipeCategory: category
       },
     });
+  };
+
   const clearAllFilters = () => {
     setSearchQuery("");
     setCuisine("All");
@@ -492,8 +502,6 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   viewButtonText: { color: "#fff", fontWeight: "bold", fontSize: 12 },
-
-  // Replace the clearButton style and add clearButtonText
   clearButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -526,7 +534,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "bold",
   },
-  
   noResultsContainer: {
     flex: 1,
     justifyContent: "center",
