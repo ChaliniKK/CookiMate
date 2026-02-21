@@ -28,30 +28,54 @@ const API_URL = `http://${address}:5000`;
 
 const cuisineOptions = [
   { label: "All Cuisines", value: "All" },
+  { label: "American 🍔", value: "American" },
   { label: "Italian 🍝", value: "Italian" },
-  { label: "Chinese 🥡", value: "Chinese" },
   { label: "Mexican 🌮", value: "Mexican" },
   { label: "Indian 🍛", value: "Indian" },
-  { label: "American 🍔", value: "American" },
-  { label: "Thai 🍜", value: "Thai" },
   { label: "Japanese 🍣", value: "Japanese" },
+  { label: "Chinese 🥡", value: "Chinese" },
+  { label: "French 🥖", value: "French" },
+  { label: "Mediterranean 🫒", value: "Mediterranean" },
+  { label: "Caribbean 🌴", value: "Caribbean" },
+  { label: "Sri Lankan 🥥", value: "Sri Lankan" },
+  { label: "Moroccan 🐪", value: "Moroccan" },
+  { label: "Korean 🇰🇷", value: "Korean" },
+  { label: "British 🇬🇧", value: "British" },
+  { label: "Swiss 🧀", value: "Swiss" },
+  { label: "Algerian", value: "Algerian" },
+  { label: "Texan 🤠", value: "Texan" },
+  { label: "Cajun/Creole ⚜️", value: "Louisiana" },
 ];
 
 const mealOptions = [
   { label: "All Meals", value: "All" },
-  { label: "Breakfast", value: "Breakfast" },
-  { label: "Lunch", value: "Lunch" },
-  { label: "Dinner", value: "Dinner" },
+  { label: "Breakfast", value: "breakfast" },
+  { label: "Lunch", value: "lunch" },
+  { label: "Dinner", value: "dinner" },
+  { label: "Snacks 🍿", value: "snack" },
+  { label: "Appetizer 🥗", value: "appetizer" },
+  { label: "Dessert 🍰", value: "dessert" },
+  { label: "Drinks 🍹", value: "drink" },
 ];
+
 const timeOptions = [
   { label: "Any Time", value: "All" },
   { label: "Under 15 min", value: "15" },
   { label: "15-30 min", value: "30" },
+  { label: "30-60 min", value: "60" },
 ];
+
 const dietOptions = [
   { label: "All Diets", value: "All" },
-  { label: "Vegetarian", value: "Vegetarian" },
-  { label: "Vegan", value: "Vegan" },
+  { label: "Vegetarian 🌱", value: "vegetarian" },
+  { label: "Vegan 🌿", value: "vegan" },
+  { label: "Gluten-Free 🌾", value: "gluten-free" },
+  { label: "Low-Carb 🥩", value: "low-carb" },
+  { label: "Low-Calorie 🔥", value: "low-calorie" },
+  { label: "Low-Fat 💪", value: "low-fat" },
+  { label: "Low-Sodium 🧂", value: "low-sodium" },
+  { label: "Diabetic-Friendly 💉", value: "diabetic" },
+  { label: "Healthy 🥗", value: "healthy" },
 ];
 
 const MyRecipesPage = () => {
@@ -69,9 +93,13 @@ const MyRecipesPage = () => {
   const [time, setTime] = useState("All");
   const [favorites, setFavorites] = useState<string[]>([]);
 
-  useEffect(() => {
-    loadFavorites();
-  }, []);
+  const [activeFilterCount, setActiveFilterCount] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadFavorites();
+    }, []),
+  );
 
   useEffect(() => {
     if (selectedCategory) {
@@ -89,6 +117,16 @@ const MyRecipesPage = () => {
       });
     };
   }, []);
+
+  useEffect(() => {
+    let count = 0;
+    if (searchQuery) count++;
+    if (cuisine !== "All") count++;
+    if (meal !== "All" && meal !== selectedCategory) count++;
+    if (diet !== "All") count++;
+    if (time !== "All") count++;
+    setActiveFilterCount(count);
+  }, [searchQuery, cuisine, meal, diet, time, selectedCategory]);
 
   const loadFavorites = async () => {
     try {
@@ -111,23 +149,25 @@ const MyRecipesPage = () => {
   };
 
   const fetchRecipes = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(`${API_URL}/api/recipes`, {
-        params: {
-          searchQuery: searchQuery,
-          meal: meal !== "All" ? meal : undefined,
-          diet: diet !== "All" ? diet : undefined,
-          cuisine: cuisine !== "All" ? cuisine : undefined,
-        },
-      });
-      setRecipes(response.data);
-    } catch (error) {
-      console.error("Backend error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const response = await axios.get(`${API_URL}/api/recipes`, {
+      params: {
+        searchQuery: searchQuery,
+        // Send 'undefined' if 'All' so the backend doesn't try to filter it
+        meal: meal !== "All" ? meal : undefined,
+        diet: diet !== "All" ? diet : undefined,
+        cuisine: cuisine !== "All" ? cuisine : undefined,
+        time: time !== "All" ? time : undefined, 
+      },
+    });
+    setRecipes(response.data);
+  } catch (error) {
+    console.error("Backend error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchRecipes();
@@ -155,6 +195,14 @@ const MyRecipesPage = () => {
         newRecipeCategory: selectedCategory
       },
     });
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setCuisine("All");
+    setDiet("All");
+    setTime("All");
+    if (!selectedCategory) {
+      setMeal("All");
+    }
   };
 
   const renderRecipeItem = ({ item }: { item: any }) => {
@@ -219,11 +267,22 @@ const MyRecipesPage = () => {
           <TextInput
             style={styles.searchInput}
             placeholder="Search recipes"
+            placeholderTextColor="#999999"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
           <Ionicons name="search" size={20} color="#8a6666" />
         </View>
+
+        <TouchableOpacity style={styles.clearButton} onPress={clearAllFilters}>
+          <Text style={styles.clearButtonText}>Clear</Text>
+          {activeFilterCount > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{activeFilterCount}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
         {selectedCategory && (
           <TouchableOpacity 
             style={[styles.addButton, !selectedRecipeId && { opacity: 0.4 }]} 
@@ -291,6 +350,20 @@ const MyRecipesPage = () => {
           color="#5F4436"
           style={{ marginTop: 50 }}
         />
+      ) : recipes.length === 0 ? (
+        <View style={styles.noResultsContainer}>
+          <Ionicons name="sad-outline" size={60} color="#c6a484" />
+          <Text style={styles.noResultsText}>No recipes found</Text>
+          <Text style={styles.noResultsSubText}>
+            Try adjusting your filters
+          </Text>
+          <TouchableOpacity
+            style={styles.resetFiltersButton}
+            onPress={clearAllFilters}
+          >
+            <Text style={styles.resetFiltersText}>Reset Filters</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <FlatList
           data={recipes}
@@ -419,6 +492,72 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   viewButtonText: { color: "#fff", fontWeight: "bold", fontSize: 12 },
+
+  // Replace the clearButton style and add clearButtonText
+  clearButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: "#ebe8e4",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#ddd1cb",
+    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  clearButtonText: {
+    color: "#5F4436",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  badge: {
+    position: "absolute",
+    top: -5,
+    right: -5,
+    backgroundColor: "#e74c3c",
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  badgeText: {
+    color: "white",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  
+  noResultsContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 40,
+  },
+  noResultsText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#5F4436",
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  noResultsSubText: {
+    fontSize: 14,
+    color: "#8a6666",
+    textAlign: "center",
+    marginBottom: 30,
+  },
+  resetFiltersButton: {
+    backgroundColor: "#c6a484",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    elevation: 3,
+  },
+  resetFiltersText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
 });
 
 export default MyRecipesPage;

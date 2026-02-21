@@ -7,6 +7,7 @@ import recipeRoutes from './routes/recipeRoutes.js';
 console.log("Current Directory:", process.cwd());
 console.log("Mongo URI is:", process.env.MONGO_URI);
 
+import userRoutes from "./routes/userRoutes.js";
 // Initialize Express
 const app = express();
 
@@ -23,6 +24,9 @@ app.get('/', (req, res) => {
   res.send("Cookimate API is running! ");
 });
 
+
+
+app.use("/api/users", userRoutes);
 app.use('/api/recipes', recipeRoutes);
 
 // --- 4. START SERVER ---
