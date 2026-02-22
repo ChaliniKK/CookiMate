@@ -36,9 +36,16 @@ export const getAllRecipes = async (req, res) => {
 
 export const getRecipeById = async (req, res) => {
   try {
-    const recipe = await Recipe.findOne({ id: req.params.id });
+    // 1. Try to find in the main Recipe collection first
+    let recipe = await Recipe.findOne({ id: req.params.id });
 
-    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
+    // 2. If not found, search the SeasonalRecipe collection
+    if (!recipe) {
+      recipe = await SeasonalRecipe.findOne({ id: req.params.id });
+    }
+
+    // 3. If still not found, return 404
+    if (!recipe) return res.status(404).json({ message: "Recipe not found in any collection" });
 
     res.json(recipe);
   } catch (error) {

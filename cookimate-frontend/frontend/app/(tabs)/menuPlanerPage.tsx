@@ -51,7 +51,13 @@ const Page = () => {
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const router = useRouter();
-  const { openModalWithDate, newRecipeId, newRecipeName, newRecipeImage, newRecipeCategory } = useLocalSearchParams();
+  const {
+    openModalWithDate,
+    newRecipeId,
+    newRecipeName,
+    newRecipeImage,
+    newRecipeCategory,
+  } = useLocalSearchParams();
 
   const markedDates = useMemo(() => {
     const marks: any = {};
@@ -75,12 +81,12 @@ const Page = () => {
       setSelectedDate(openModalWithDate as string);
       setIsAddingMeal(false);
       setIsModalVisible(true);
-      router.setParams({ 
-        newRecipeId: undefined, 
-        newRecipeName: undefined, 
-        newRecipeImage: undefined, 
+      router.setParams({
+        newRecipeId: undefined,
+        newRecipeName: undefined,
+        newRecipeImage: undefined,
         newRecipeCategory: undefined,
-        openModalWithDate: undefined
+        openModalWithDate: undefined,
       });
     } else if (openModalWithDate) {
       setSelectedDate(openModalWithDate as string);
@@ -101,7 +107,8 @@ const Page = () => {
         if (data && data.length > 0) {
           setIsSeasonal(true);
           const remoteImages = data.map((recipe: any) => ({
-            uri: recipe.image,
+            uri: recipe.image, //Gets the images of the seasonal recipe
+            id: recipe.id, //Used to get the other content of the seasonal recipes
           }));
           setCarouselImages([...remoteImages, remoteImages[0]]);
         } else {
@@ -120,21 +127,30 @@ const Page = () => {
     if (carouselImages.length === 0) return;
     const timer = setInterval(() => {
       const nextIndex = currentIndex + 1;
+      
       if (nextIndex < carouselImages.length) {
         flatListRef.current?.scrollToIndex({
           index: nextIndex,
           animated: true,
         });
-        setCurrentIndex(nextIndex);
+       
       }
     }, 4000);
     return () => clearInterval(timer);
-  }, [currentIndex, carouselImages]);
-
+  }, [currentIndex, carouselImages.length]);
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
-    const scrollValue = contentOffsetX / CAROUSEL_WIDTH;
-    if (scrollValue >= carouselImages.length - 1) {
+    
+    // Calculate the index based on current scroll position
+    const manualIndex = Math.round(contentOffsetX / CAROUSEL_WIDTH);
+    
+    // Update the currentIndex state so the button knows which ID to use
+    if (manualIndex !== currentIndex && manualIndex < carouselImages.length) {
+      setCurrentIndex(manualIndex);
+    }
+
+    // Handle the infinite loop reset
+    if (contentOffsetX >= (carouselImages.length - 1) * CAROUSEL_WIDTH) {
       flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
       setCurrentIndex(0);
     }
@@ -151,17 +167,20 @@ const Page = () => {
       "Are you sure you want to remove this recipe from your planner?",
       [
         { text: "Cancel", style: "cancel" },
-        { 
-          text: "Remove", 
-          style: "destructive", 
-          onPress: () => setPlannedRecipes((prev) => prev.filter((r) => r.uniqueId !== uniqueId)) 
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: () =>
+            setPlannedRecipes((prev) =>
+              prev.filter((r) => r.uniqueId !== uniqueId),
+            ),
         },
-      ]
+      ],
     );
   };
 
   const getCategoryColor = (catName: string) => {
-    const found = mealCategories.find(c => c.label.includes(catName));
+    const found = mealCategories.find((c) => c.label.includes(catName));
     return found ? found.color : "#fff";
   };
 
@@ -185,9 +204,9 @@ const Page = () => {
               setIsModalVisible(true);
             }}
             dayComponent={({ date, state, marking }: any) => {
-              const isToday = state === 'today';
+              const isToday = state === "today";
               return (
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => {
                     setSelectedDate(date.dateString);
                     setIsAddingMeal(false);
@@ -195,14 +214,20 @@ const Page = () => {
                   }}
                   style={styles.dayComponent}
                 >
-                  <View style={[
-                    styles.dayTextContainer,
-                    isToday && styles.todayCircle
-                  ]}>
-                    <Text style={[
-                      styles.dayText, 
-                      state === 'disabled' ? { color: '#d9e1e8' } : { color: isToday ? 'white' : 'black' }
-                    ]}>
+                  <View
+                    style={[
+                      styles.dayTextContainer,
+                      isToday && styles.todayCircle,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.dayText,
+                        state === "disabled"
+                          ? { color: "#d9e1e8" }
+                          : { color: isToday ? "white" : "black" },
+                      ]}
+                    >
                       {date.day}
                     </Text>
                   </View>
@@ -236,7 +261,17 @@ const Page = () => {
             />
           </View>
           {isSeasonal && (
-            <TouchableOpacity style={styles.seasonalButton}>
+            <TouchableOpacity
+              style={styles.seasonalButton}
+              onPress={() => {
+                const currentRecipe = carouselImages[currentIndex];
+
+                // Navigate to the dynamic recipe route using its ID
+                if (currentRecipe && currentRecipe.id) {
+                  router.push(`/recipe/${currentRecipe.id}` as any);
+                }
+              }}
+            >
               <Text style={styles.seasonalButtonText}>View Recipe</Text>
             </TouchableOpacity>
           )}
@@ -266,13 +301,23 @@ const Page = () => {
                 <View style={styles.dateContainer}>
                   <Text style={styles.popupBoxDate}>{selectedDate}</Text>
                 </View>
-                <ScrollView style={{ marginTop: 20 }} showsVerticalScrollIndicator={false}>
+                <ScrollView
+                  style={{ marginTop: 20 }}
+                  showsVerticalScrollIndicator={false}
+                >
                   {(() => {
-                    const dailyRecipes = plannedRecipes.filter((r) => r.date === selectedDate);
+                    const dailyRecipes = plannedRecipes.filter(
+                      (r) => r.date === selectedDate,
+                    );
                     if (dailyRecipes.length === 0) {
                       return (
                         <View style={styles.emptyStateContainer}>
-                          <Ionicons name="restaurant-outline" size={40} color="#522F2F" style={{ opacity: 0.3 }} />
+                          <Ionicons
+                            name="restaurant-outline"
+                            size={40}
+                            color="#522F2F"
+                            style={{ opacity: 0.3 }}
+                          />
                           <Text style={styles.emptyStateText}>
                             You have no meals planned on this date
                           </Text>
@@ -280,25 +325,44 @@ const Page = () => {
                       );
                     }
                     return dailyRecipes.map((recipe) => (
-                      <TouchableOpacity 
-                        key={recipe.uniqueId} 
+                      <TouchableOpacity
+                        key={recipe.uniqueId}
                         activeOpacity={0.8}
                         onPress={() => {
                           setIsModalVisible(false);
                           router.push(`/recipe/${recipe.id}` as any);
                         }}
-                        style={[styles.plannedCard, { backgroundColor: getCategoryColor(recipe.category) }]}
+                        style={[
+                          styles.plannedCard,
+                          {
+                            backgroundColor: getCategoryColor(recipe.category),
+                          },
+                        ]}
                       >
-                        <Image source={{ uri: recipe.image }} style={styles.plannedImage} />
+                        <Image
+                          source={{ uri: recipe.image }}
+                          style={styles.plannedImage}
+                        />
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.plannedCategoryText}>{recipe.category}</Text>
-                          <Text style={styles.plannedRecipeName} numberOfLines={1}>{recipe.name}</Text>
+                          <Text style={styles.plannedCategoryText}>
+                            {recipe.category}
+                          </Text>
+                          <Text
+                            style={styles.plannedRecipeName}
+                            numberOfLines={1}
+                          >
+                            {recipe.name}
+                          </Text>
                         </View>
-                        <TouchableOpacity 
-                          style={styles.deleteButton} 
+                        <TouchableOpacity
+                          style={styles.deleteButton}
                           onPress={() => handleDeleteRecipe(recipe.uniqueId)}
                         >
-                          <Ionicons name="trash-outline" size={22} color="#522F2F" />
+                          <Ionicons
+                            name="trash-outline"
+                            size={22}
+                            color="#522F2F"
+                          />
                         </TouchableOpacity>
                       </TouchableOpacity>
                     ));
@@ -366,37 +430,37 @@ export const styles = StyleSheet.create({
   },
   calendarContainer: { marginTop: 10 },
   dayComponent: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     width: 45,
     height: 50,
   },
   dayTextContainer: {
     width: 32,
     height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   todayCircle: {
-    backgroundColor: '#c6a484',
+    backgroundColor: "#c6a484",
     borderRadius: 16,
   },
   dayText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   plannedIndicator: {
-    position: 'absolute', // FLOAT THE BADGE
-    bottom: 2,           // PLACE AT THE BOTTOM
-    backgroundColor: '#FF4D4D',
+    position: "absolute", // FLOAT THE BADGE
+    bottom: 2, // PLACE AT THE BOTTOM
+    backgroundColor: "#FF4D4D",
     borderRadius: 4,
     paddingHorizontal: 4,
     paddingVertical: 1,
   },
   plannedIndicatorText: {
-    color: 'white',
+    color: "white",
     fontSize: 6,
-    fontWeight: '900',
+    fontWeight: "900",
   },
   carouselShadowContainer: {
     alignSelf: "center",
