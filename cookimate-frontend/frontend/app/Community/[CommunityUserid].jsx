@@ -1,6 +1,11 @@
 import React from 'react';
-import { View, Text, Image, Pressable, TouchableOpacity, FlatList, SafeAreaView } from 'react-native';
+import { View, Text, Image, Pressable, StyleSheet, TouchableOpacity, FlatList, Dimensions} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+
+const { width } = Dimensions.get('window');
+const COLUMN_COUNT = 3;
+const IMAGE_SIZE = width / COLUMN_COUNT;
 
 export default function CommunityUserProfile() {
   const { CommunityUserid } = useLocalSearchParams();
@@ -11,69 +16,151 @@ export default function CommunityUserProfile() {
     handle: `@${CommunityUserid?.toString().toLowerCase().replace(/\s/g, '') || 'user'}`,
     bio: "Passionate home cook!",
     stats: { recipes: 24, followers: "1.2k", following: 150 },
-    posts: [
-      { id: '1', uri: 'https://picsum.photos/id/102/400/400' },
-      { id: '2', uri: 'https://picsum.photos/id/103/400/400' },
-      { id: '3', uri: 'https://picsum.photos/id/104/400/400' },
-      { id: '4', uri: 'https://picsum.photos/id/106/400/400' },
-      { id: '5', uri: 'https://picsum.photos/id/107/400/400' },
-      { id: '6', uri: 'https://picsum.photos/id/108/400/400' },
-    ]
   };
 
   const ProfileHeader = () => (
-    <View>
-      <Pressable onPress={() => router.back()}>
-        <Text>Back</Text>
+    <View style={styles.headerContainer}>
+      <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <Text style={styles.backBtnText}>← Back</Text>
       </Pressable>
 
-      <View>
-        <Image source={{ uri: `https://i.pravatar.cc/150?u=${CommunityUserid}` }} />
+      <Image 
+        source={{ uri: "https://thumbs.dreamstime.com/b/default-avatar-profile-icon-vector-unknown-social-media-user-photo-default-avatar-profile-icon-vector-unknown-social-media-user-184816085.jpg" }} 
+        style={styles.profileAvatar}
+      />
+
+      <Text style={styles.userNameText}>{user.name}</Text>
+      <Text style={styles.handleText}>{user.handle}</Text>
+      <Text style={styles.idText}>ID: {CommunityUserid}</Text>
+      
+      <Text style={styles.bioText}>{user.bio}</Text>
+
+      <View style={styles.statsRow}>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{user.stats.recipes}</Text>
+          <Text style={styles.statLabel}>Recipes</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{user.stats.followers}</Text>
+          <Text style={styles.statLabel}>Followers</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{user.stats.following}</Text>
+          <Text style={styles.statLabel}>Following</Text>
+        </View>
       </View>
 
-      <Text>{user.name}</Text>
-      <Text>{user.handle}</Text>
-      <Text>ID: {CommunityUserid}</Text>
-      <Text>{user.bio}</Text>
-
-      <View>
-        <View>
-          <Text>{user.stats.recipes}</Text>
-          <Text>Recipes</Text>
-        </View>
-        <View>
-          <Text>{user.stats.followers}</Text>
-          <Text>Followers</Text>
-        </View>
-        <View>
-          <Text>{user.stats.following}</Text>
-          <Text>Following</Text>
-        </View>
-      </View>
-
-      <Pressable>
-        <Text>Follow</Text>
+      <Pressable style={styles.followButton}>
+        <Text style={styles.followButtonText}>Follow</Text>
       </Pressable>
     </View>
   );
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.mainContainer}>
       <FlatList
         data={user.posts}
         keyExtractor={(item) => item.id}
-        numColumns={3}
+        numColumns={COLUMN_COUNT}
         ListHeaderComponent={ProfileHeader}
         renderItem={({ item }) => (
-          <View>
-            <Image source={{ uri: item.uri }} />
+          <View style={styles.postImageContainer}>
+            <Image 
+              source={{ uri: item.uri }} 
+              style={styles.postImage} 
+            />
           </View>
         )}
-      />
-
-      <TouchableOpacity onPress={() => router.push('/Community/CommunityFeedCards')}>
-        <Text>Go to Community Feed cards</Text>
-      </TouchableOpacity>
+      />      
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  headerContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  backBtn: {
+    marginTop: 5,
+    alignSelf: 'flex-start',
+  },
+  backBtnText: {
+    color: '#B86D2A',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  profileAvatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginVertical: 10,
+    backgroundColor: '#f0f0f0',
+  },
+  userNameText: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1a1919',
+  },
+  handleText: {
+    color: 'gray',
+    fontSize: 14,
+  },
+  idText: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 2,
+  },
+  bioText: {
+    textAlign: 'center',
+    marginVertical: 15,
+    color: '#444',
+    paddingHorizontal: 20,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginVertical: 15,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: 'gray',
+  },
+  followButton: {
+    backgroundColor: '#612D25',
+    paddingVertical: 12,
+    borderRadius: 25,
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  followButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  postImageContainer: {
+    padding: 1, 
+  },
+  postImage: {
+    width: IMAGE_SIZE - 2,
+    height: IMAGE_SIZE - 2,
+  },
+});
