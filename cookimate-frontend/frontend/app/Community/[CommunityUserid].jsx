@@ -16,6 +16,14 @@ export default function CommunityUserProfile() {
     handle: `@${CommunityUserid?.toString().toLowerCase().replace(/\s/g, '') || 'user'}`,
     bio: "Passionate home cook!",
     stats: { recipes: 24, followers: "1.2k", following: 150 },
+    posts: [
+      { id: '1', uri: 'https://www.halfbakedharvest.com/wp-content/uploads/2024/04/30-Minute-Honey-Garlic-Chicken-1.jpg' },
+      { id: '2', uri: 'https://www.eatingwell.com/thmb/S2NGMEcgm11dtdBJ6Hwprwq-nVk=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/eat-the-rainbow-chopped-salad-with-basil-mozzarella-beauty-185-278133-4000x2700-56879ac756cd46ea97944768847b7ea5.jpg' },
+      { id: '3', uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9TF3SqH4Bd9ubQzSBzTES6w1zoMH6-3nR9w&s' },
+      { id: '4', uri: 'https://hips.hearstapps.com/hmg-prod/images/chocolate-pie-cookies-lead-66fc19fe1abd1.jpg?crop=0.6666666666666667xw:1xh;center,top' },
+      { id: '5', uri: 'https://www.happyfoodstube.com/wp-content/uploads/2018/08/raspberry-oreo-no-bake-dessert-image-500x500.jpg' },
+      { id: '6', uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSM6wseYxMw4o2bGtI1H54AT903NIK3BgTMJQ&s' },
+    ]
   };
 
   const ProfileHeader = () => (
