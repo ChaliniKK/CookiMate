@@ -114,8 +114,8 @@ const CommunityFeedCards = () => {
   const handleSearch = (text) => {
     setSearch(text);
     if (text.length > 0) {
-      const results = COMMUNITY_FEED.filter(user => 
-        user.userName.toLowerCase().includes(text.toLowerCase())
+      const results = User_info.filter((user) => 
+        user.username.toLowerCase().includes(text.toLowerCase())
       );
       setFilteredUsers(results);
     } else {
@@ -142,20 +142,20 @@ const CommunityFeedCards = () => {
           <View style={styles.dropdown}>
             <FlatList
               data={filteredUsers}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item) => item.firebaseUid}
               renderItem={({ item }) => (
                 <TouchableOpacity 
                   style={styles.dropdownItem}
                   onPress={() => {
                     setSearch(''); 
                     setFilteredUsers([]);
-                    router.push(`/Community/${item.userName}`);
+                    router.push(`/Community/${item.username}`);
                   }}
                 >
                 
 
                 
-                  <Text style={styles.itemText}>{item.userName}</Text>
+                  <Text style={styles.itemText}>{item.username}</Text>
                 </TouchableOpacity>
               )}
             />
