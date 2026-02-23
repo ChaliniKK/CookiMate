@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useState ,} from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -7,39 +7,39 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Image
+  Image,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  Animated,
+  Easing
 } from "react-native";
 import { globalStyle } from "../globalStyleSheet.style";
 
-//fake data to test the front-end
+const { width } = Dimensions.get("window");
+
+// --- DATA ---
 const COMMUNITY_FEED = [
   {
-    postId: "p_001", // Unique ID for the post
-    userId: "u_101",
+    postId: "p_001",
     userName: "wenuka",
-    image: "https://example.com/pasta.jpg",
-    caption: "Secret family lasagna recipe! 🍝",
+    userProfilePic: "https://res.cloudinary.com/cookimate-images/image/upload/v1770965637/profile_pic3_jgp0tk.png",
+    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop",
+    caption: "Secret family lasagna recipe! 🍝 #cooking #chef",
     likes: 124,
     comments: [
-      {
-        commentId: "c_001",
-        userId: "u_102",
-        userName: "BakerJane",
-        text: "Looks delicious!",
-      },
-      {
-        commentId: "c_002",
-        userId: "u_104",
-        userName: "SpicySam",
-        text: "Needs more garlic!",
-      },
+      { commentId: "c_001", userName: "BakerJane", text: "Looks delicious!" },
+      { commentId: "c_002", userName: "SpicySam", text: "Needs more garlic!" },
+       { commentId: "c_003", userName: "BakerJane", text: "Looks delicious!" },
+       { commentId: "c_004", userName: "SpicySam", text: "Needs more garlic!" },
+       
     ],
   },
   {
     postId: "p_002",
-    userId: "u_102",
     userName: "kithnula",
-    image: "https://example.com/bread.jpg",
+    userProfilePic: "https://randomuser.me/api/portraits/men/32.jpg",
+    image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1000&auto=format&fit=crop",
     caption: "Fresh sourdough right out of the oven. 🥖",
     likes: 89,
     comments: [],
@@ -47,77 +47,122 @@ const COMMUNITY_FEED = [
 ];
 
 const User_info = [
-  {
-    firebaseUid: "uid_882341",
-    username: "chef_mario",
-    name: "Mario Rossi",
-    age: 34,
-    profilePic:
-      "https://res.cloudinary.com/cookimate-images/image/upload/v1770965637/profile_pic3_jgp0tk.png",
-    points: 1250,
-    level: 5,
-    followers: 150,
-    recipesCookedCount: 42,
-    unlockedAchievements: [],
-    favorites: [],
-  },
-  {
-    firebaseUid: "uid_991223",
-    username: "baker_jane",
-    name: "Jane Doe",
-    age: 28,
-    profilePic:
-      "https://res.cloudinary.com/cookimate-images/image/upload/v1770965637/profile_pic3_jgp0tk.png",
-    points: 800,
-    level: 3,
-    followers: 95,
-    recipesCookedCount: 15,
-    unlockedAchievements: [],
-    favorites: [],
-  },
-  {
-    firebaseUid: "uid_774455",
-    username: "healthy_eats",
-    name: "Sam Green",
-    age: 24,
-    profilePic:
-      "https://res.cloudinary.com/cookimate-images/image/upload/v1770965637/profile_pic3_jgp0tk.png",
-    points: 2100,
-    level: 8,
-    followers: 430,
-    recipesCookedCount: 89,
-    unlockedAchievements: [],
-    favorites: [],
-  },
-  {
-    firebaseUid: "uid_112233",
-    username: "spicy_sam",
-    name: "Samuel Jackson",
-    age: 40,
-    profilePic:
-      "https://res.cloudinary.com/cookimate-images/image/upload/v1770965637/profile_pic3_jgp0tk.png",
-    points: 450,
-    level: 2,
-    followers: 20,
-    recipesCookedCount: 5,
-    unlockedAchievements: [],
-    favorites: [],
-  },
-  {
-    firebaseUid: "uid_445566",
-    username: "dessert_queen",
-    name: "Sophie Miller",
-    age: 31,
-    profilePic: "https://randomuser.me/api/portraits/women/5.jpg",
-    points: 3400,
-    level: 12,
-    followers: 1200,
-    recipesCookedCount: 145,
-    unlockedAchievements: [],
-    favorites: [],
-  },
+  { firebaseUid: "uid_1", username: "chef_mario", profilePic: "https://res.cloudinary.com/cookimate-images/image/upload/v1770965637/profile_pic3_jgp0tk.png" },
+  { firebaseUid: "uid_2", username: "baker_jane", profilePic: "https://randomuser.me/api/portraits/women/1.jpg" },
+  { firebaseUid: "uid_3", username: "healthy_eats", profilePic: "https://randomuser.me/api/portraits/men/44.jpg" },
 ];
 
+// --- SUB-COMPONENT: POST CARD ---
+const PostCard = ({ item }) => {
+  const [showComments, setShowComments] = useState(false);
+  const [isCommenting, setIsCommenting] = useState(false);
+  const [commentText, setCommentText] = useState("");
+
+  // Animation logic
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const hasComments = item.comments && item.comments.length > 0;
+
+  useEffect(() => {
+    if (showComments) {
+      Animated.spring(animatedValue, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(animatedValue, {
+        toValue: 0,
+        duration: 250,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showComments]);
+
+  const translateY = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [150, 0], 
+  });
+
+  return (
+    <View style={styles.cardContainer}>
+      
+      <TouchableOpacity 
+        activeOpacity={0.9} 
+        onPress={() => hasComments && setShowComments(!showComments)}
+      >
+        <Image source={{ uri: item.image }} style={styles.postImage} />
+        
+        <TouchableOpacity style={styles.followBtn} onPress={() => alert('Followed!')}>
+          <Text style={styles.followBtnText}>Follow</Text>
+        </TouchableOpacity>
+
+        {/* Animated Floating Comments Overlay */}
+        {showComments && hasComments && (
+          <Animated.View 
+            style={[
+              styles.floatingComments, 
+              { 
+                opacity: animatedValue, 
+                transform: [{ translateY }] 
+              }
+            ]}
+          >
+            <Text style={styles.floatingHeader}>Tap image to hide</Text>
+            {item.comments.map((c) => (
+              <View key={c.commentId} style={styles.individualCommentBubble}>
+                <Text style={styles.commentUser}>@{c.userName}</Text>
+                <Text style={styles.commentTextContent}>{c.text}</Text>
+              </View>
+            ))}
+          </Animated.View>
+        )}
+      </TouchableOpacity>
+
+      {/* 2. User Info & Comment Toggle Row */}
+      <View style={styles.cardHeaderRow}>
+        <View style={styles.userInfoSmall}>
+          <Image source={{ uri: item.userProfilePic }} style={styles.miniProfilePic} />
+          <Text style={styles.userNameText}>{item.userName}</Text>
+        </View>
+
+        <TouchableOpacity onPress={() => setIsCommenting(!isCommenting)}>
+          <Text style={[styles.commentBtnIcon, { color: '#da883b', fontWeight: 'bold' }]}>
+            {isCommenting ? "Back" : "Add comment"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* 3. Caption */}
+      <View style={styles.captionContainer}>
+        <Text style={styles.captionText}>{item.caption}</Text>
+      </View>
+
+      {/* 4. Conditional Comment Input */}
+      {isCommenting && (
+        <View style={styles.commentInputRow}>
+          <TextInput
+            style={styles.inputBox}
+            placeholder="Write a comment..."
+            value={commentText}
+            onChangeText={setCommentText}
+            autoFocus
+          />
+          <TouchableOpacity onPress={() => {
+            alert(`Commented: ${commentText}`);
+            setIsCommenting(false);
+            setCommentText("");
+          }}>
+            <Text style={styles.postBtnText}>Post</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+};
+
+// --- MAIN PAGE ---
 const CommunityFeedCards = () => {
   const router = useRouter();
   const [search, setSearch] = useState("");
@@ -127,7 +172,7 @@ const CommunityFeedCards = () => {
     setSearch(text);
     if (text.length > 0) {
       const results = User_info.filter((user) =>
-        user.username.toLowerCase().includes(text.toLowerCase()),
+        user.username.toLowerCase().includes(text.toLowerCase())
       );
       setFilteredUsers(results);
     } else {
@@ -136,18 +181,19 @@ const CommunityFeedCards = () => {
   };
 
   return (
-    <View style={[globalStyle.container,styles.container]}>
-      {/* --- NEW PARENT VIEW --- */}
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={[globalStyle.container, styles.container]}
+    >
       <View style={styles.searchAndAddContainer}>
-        {/* Search Section (Flex 5) */}
         <View style={styles.searchSection}>
           <TextInput
             style={styles.searchInput}
             placeholder="Search users..."
             value={search}
+            placeholderTextColor="#999"
             onChangeText={handleSearch}
           />
-
           {filteredUsers.length > 0 && (
             <View style={styles.dropdown}>
               <FlatList
@@ -163,10 +209,7 @@ const CommunityFeedCards = () => {
                     }}
                   >
                     <View style={styles.userInfoRow}>
-                      <Image
-                        source={{ uri: item.profilePic }}
-                        style={styles.profileThumbnail}
-                      />
+                      <Image source={{ uri: item.profilePic }} style={styles.profileThumbnail} />
                       <Text style={styles.itemText}>{item.username}</Text>
                     </View>
                   </TouchableOpacity>
@@ -176,97 +219,229 @@ const CommunityFeedCards = () => {
           )}
         </View>
 
-        
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => alert("Add Post Clicked!")}
-        >
-          <Text style={styles.addButtonText}>+</Text>
+        <TouchableOpacity style={styles.addButton} onPress={() => alert("Navigate to Add Post")}>
+          <Text style={styles.addButtonText}>Add post</Text>
         </TouchableOpacity>
       </View>
-      
-    </View>
+
+      <FlatList
+        data={COMMUNITY_FEED}
+        keyExtractor={(item) => item.postId}
+        renderItem={({ item }) => <PostCard item={item} />}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      />
+    </KeyboardAvoidingView>
   );
 };
 
+// --- STYLES ---
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 15,
-    marginTop: 15,
-    backgroundColor: "#f5f5f5",
-  },
-  // NEW STYLES
-  searchAndAddContainer: {
-    flexDirection: "row",
-    alignItems: "flex-start", // Keeps button at the top even if dropdown opens
-    gap: 10,
-    zIndex: 10,
-  },
-  searchSection: {
-    flex: 3, 
-    position: "relative",
-  },
-  addButton: {
+  container: { 
     flex: 1, 
-    height: 50,
-    backgroundColor: "#9ada3b", 
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 2,
+    padding: 15, 
+    marginTop: 10, 
+    backgroundColor: "#f5f5f5" 
   },
-  addButtonText: {
-    color: "#fff",
-    fontSize: 24,
-    fontWeight: "bold",
+  searchAndAddContainer: { 
+    flexDirection: "row", 
+    gap: 10, 
+    zIndex: 10, 
+    marginBottom: 20 
+  },
+  searchSection: { 
+    flex: 3.5, 
+    position: "relative" 
+  },
+  addButton: { 
+    flex: 1, 
+    height: 50, 
+    backgroundColor: "#9ada3b", 
+    borderRadius: 12, 
+    justifyContent: "center", 
+    alignItems: "center", 
+    elevation: 3 
+  },
+  addButtonText: { 
+    color: "#3f3b3b", 
+    fontSize: 13, 
+    fontWeight: 'bold' 
+  },
+  searchInput: { 
+    height: 50, 
+    backgroundColor: "#fff", 
+    borderRadius: 12, 
+    paddingHorizontal: 15, 
+    borderWidth: 1, 
+    borderColor: "#eee" 
+  },
+  cardContainer: {
+    backgroundColor: "#fff", 
+    borderRadius: 20, 
+    marginBottom: 25, 
+    overflow: "hidden", 
+    elevation: 5, 
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 8,
+  },
+  postImage: { 
+    width: "100%", 
+    height: 320 
+  },
+  followBtn: {
+    position: "absolute", 
+    top: 15, 
+    right: 15, 
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    paddingHorizontal: 18, 
+    paddingVertical: 6, 
+    borderRadius: 20, 
+    borderWidth: 1, 
+    borderColor: 'rgba(255,255,255,0.3)'
+  },
+  followBtnText: { 
+    color: "#fff", 
+    fontWeight: "bold", 
+    fontSize: 12 
   },
   
-  searchInput: {
-    height: 50,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    borderWidth: 1,
-    borderColor: "#ddd",
-  },
-  userInfoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  profileThumbnail: {
-    width: 35, // Set a fixed width
-    height: 35, // Set a fixed height
-    borderRadius: 17.5, // Makes it a circle (half of width/height)
-    marginRight: 12,
-    backgroundColor: "#ddd",
-  },
-  itemText: {
-    fontSize: 16,
-    fontWeight: "500", // Makes the username slightly bolder
-    color: "#333",
-  },
-  dropdown: {
-    position: "absolute",
-    top: 55,
-    left: 0,
+  // Animated Comments UI
+  floatingComments: {
+    position: "absolute", 
+    bottom: 0, 
+    left: 0, 
     right: 0,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    maxHeight: 200,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-  },
-  dropdownItem: {
+    backgroundColor: "rgba(0, 0, 0, 0.65)", 
     padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderTopLeftRadius: 20, 
+    borderTopRightRadius: 20, 
+    maxHeight: 250,
   },
-  itemText: {
-    fontSize: 16,
-    color: "#333",
+  floatingHeader: {
+    color: '#9ada3b', 
+    fontSize: 10, 
+    fontWeight: '800', 
+    textAlign: 'center',
+    textTransform: 'uppercase', 
+    letterSpacing: 1, 
+    marginBottom: 12 
+  },
+  individualCommentBubble: {
+    backgroundColor: "rgba(255, 255, 255, 0.95)", 
+    borderRadius: 15,
+    borderTopLeftRadius: 4, 
+    paddingHorizontal: 12, 
+    paddingVertical: 8,
+    marginBottom: 8, 
+    alignSelf: 'flex-start', 
+    maxWidth: '85%',
+    elevation: 2, 
+    shadowColor: "#000", 
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2, 
+    shadowRadius: 2,
+  },
+  commentUser: { 
+    fontSize: 11, 
+    fontWeight: "bold", 
+    color: "#f77829", 
+    marginBottom: 2 
+  },
+  commentTextContent: { 
+    fontSize: 13, 
+    color: "#333", 
+    lineHeight: 16 
+  },
+
+  cardHeaderRow: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center", 
+    padding: 12 
+  },
+  userInfoSmall: { 
+    flexDirection: "row", 
+    alignItems: "center" 
+  },
+  miniProfilePic: { 
+    width: 32, 
+    height: 32, 
+    borderRadius: 16, 
+    marginRight: 10, 
+    borderWidth: 2, 
+    borderColor: '#ea390c' 
+  },
+  userNameText: { 
+    fontWeight: "700", 
+    fontSize: 15, 
+    color: '#222' 
+  },
+  commentBtnIcon: { 
+    fontSize: 13 
+  },
+  captionContainer: { 
+    paddingHorizontal: 12, 
+    paddingBottom: 15 
+  },
+  captionText: { 
+    fontSize: 14, 
+    color: "#555", 
+    lineHeight: 18 
+  },
+  commentInputRow: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    padding: 12, 
+    borderTopWidth: 1, 
+    borderTopColor: "#f0f0f0" 
+  },
+  inputBox: { 
+    flex: 1, 
+    height: 40, 
+    backgroundColor: "#f0f0f0", 
+    borderRadius: 20, 
+    paddingHorizontal: 15, 
+    marginRight: 10 
+  },
+  postBtnText: { 
+    color: "#da8d3b", 
+    fontWeight: "800" 
+  },
+
+  dropdown: { 
+    position: "absolute", 
+    top: 55, 
+    left: 0, 
+    right: 0, 
+    backgroundColor: "#fff", 
+    borderRadius: 12, 
+    elevation: 10, 
+    zIndex: 100, 
+    maxHeight: 250, 
+    borderWidth: 1, 
+    borderColor: '#eee' 
+  },
+  dropdownItem: { 
+    padding: 15, 
+    borderBottomWidth: 1, 
+    borderBottomColor: "#f9f9f9" 
+  },
+  userInfoRow: { 
+    flexDirection: "row", 
+    alignItems: "center" 
+  },
+  profileThumbnail: { 
+    width: 35, 
+    height: 35, 
+    borderRadius: 17.5, 
+    marginRight: 12 
+  },
+  itemText: { 
+    fontSize: 16, 
+    color: "#333", 
+    fontWeight: '500' 
   },
 });
 
