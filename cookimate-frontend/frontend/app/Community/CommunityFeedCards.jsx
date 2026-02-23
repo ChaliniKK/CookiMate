@@ -37,6 +37,74 @@ const COMMUNITY_FEED = [
   }
 ];
 
+const User_info = [
+  {
+    "firebaseUid": "uid_882341",
+    "username": "chef_mario",
+    "name": "Mario Rossi",
+    "age": 34,
+    "profilePic": "https://randomuser.me/api/portraits/men/1.jpg",
+    "points": 1250,
+    "level": 5,
+    "followers": 150,
+    "recipesCookedCount": 42,
+    "unlockedAchievements": [],
+    "favorites": []
+  },
+  {
+    "firebaseUid": "uid_991223",
+    "username": "baker_jane",
+    "name": "Jane Doe",
+    "age": 28,
+    "profilePic": "https://randomuser.me/api/portraits/women/2.jpg",
+    "points": 800,
+    "level": 3,
+    "followers": 95,
+    "recipesCookedCount": 15,
+    "unlockedAchievements": [],
+    "favorites": []
+  },
+  {
+    "firebaseUid": "uid_774455",
+    "username": "healthy_eats",
+    "name": "Sam Green",
+    "age": 24,
+    "profilePic": "https://randomuser.me/api/portraits/men/3.jpg",
+    "points": 2100,
+    "level": 8,
+    "followers": 430,
+    "recipesCookedCount": 89,
+    "unlockedAchievements": [],
+    "favorites": []
+  },
+  {
+    "firebaseUid": "uid_112233",
+    "username": "spicy_sam",
+    "name": "Samuel Jackson",
+    "age": 40,
+    "profilePic": "https://randomuser.me/api/portraits/men/4.jpg",
+    "points": 450,
+    "level": 2,
+    "followers": 20,
+    "recipesCookedCount": 5,
+    "unlockedAchievements": [],
+    "favorites": []
+  },
+  {
+    "firebaseUid": "uid_445566",
+    "username": "dessert_queen",
+    "name": "Sophie Miller",
+    "age": 31,
+    "profilePic": "https://randomuser.me/api/portraits/women/5.jpg",
+    "points": 3400,
+    "level": 12,
+    "followers": 1200,
+    "recipesCookedCount": 145,
+    "unlockedAchievements": [],
+    "favorites": []
+  }
+]
+
 const CommunityFeedCards = () => {
   const router = useRouter();
   const [search, setSearch] = useState('');
